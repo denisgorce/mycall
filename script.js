@@ -23,13 +23,12 @@ btn.onclick = function() {
 };
 
 function startPeer(localStream) {
-    // On charge PeerJS dynamiquement si besoin, mais ici on suppose qu'il est là
+    // On tente de se connecter avec l'ID Maître
     const peer = new Peer(SECRET_ID);
 
-    peer.on('open', function() {
-        status.innerText = "En attente de l'autre...";
-        btn.innerText = "PRÊT";
-        btn.style.background = "#555";
+    peer.on('open', function(id) {
+        status.innerText = "Mode Hôte : En attente...";
+        btn.innerText = "À L'ÉCOUTE";
     });
 
     peer.on('call', function(call) {
@@ -38,14 +37,27 @@ function startPeer(localStream) {
         setupAudio(call);
     });
 
+    // C'EST ICI QUE ÇA SE JOUE
     peer.on('error', function(err) {
-        if (err.type === 'id-taken') {
-            status.innerText = "L'autre est là, connexion...";
-            const guest = new Peer();
+        // Si l'ID est déjà pris OU indisponible
+        if (err.type === 'id-taken' || err.type === 'unavailable-id') {
+            status.innerText = "L'autre est déjà connecté, je l'appelle...";
+            
+            // On crée un ID aléatoire pour nous-mêmes (Invité)
+            const guest = new Peer(); 
+            
             guest.on('open', function() {
+                // On appelle l'ID Maître (le SECRET_ID)
                 const call = guest.call(SECRET_ID, localStream);
-                setupAudio(call);
+                
+                if (call) {
+                    setupAudio(call);
+                } else {
+                    status.innerText = "Échec de l'appel. Réessayez.";
+                }
             });
+
+            guest.on('error', (e) => alert("Erreur Invité: " + e.type));
         } else {
             alert("Erreur PeerJS : " + err.type);
         }
