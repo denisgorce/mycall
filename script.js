@@ -1,89 +1,62 @@
-const SECRET_ROOM = "salon-unique-radio-123"; 
+const SECRET_ROOM = "salon-prive-789"; 
 let localStream;
-let remoteVideo = document.createElement('video'); // Utilisation de <video> pour forcer le HP sur mobile
-remoteVideo.setAttribute('playsinline', 'true');
-
 const status = document.getElementById('status');
-const btnStart = document.getElementById('btn-start');
-const speakerBox = document.getElementById('speaker-box');
-const speakerSelect = document.getElementById('speaker-select');
+const btnPlay = document.getElementById('btn-play');
 
-// Initialisation
-async function init() {
+// Création d'un élément audio unique
+const remoteAudio = new Audio();
+remoteAudio.autoplay = true;
+
+async function start() {
     try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        status.innerText = "🎤 Micro OK. Recherche du partenaire...";
-        
-        const peer = new Peer(); 
+        // 1. Capture du micro
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        status.innerText = "🎤 Micro prêt. Connexion...";
+
+        const peer = new Peer();
 
         peer.on('open', () => {
-            // Tentative d'appel vers l'hôte
             const call = peer.call(SECRET_ROOM + '-host', localStream);
-            call.on('stream', stream => setupStream(stream));
+            if (call) handleCall(call);
 
-            // Si pas de réponse après 3s, on devient l'hôte
             setTimeout(() => {
-                if (status.innerText.includes("Recherche")) becomeHost();
+                if (status.innerText.includes("Connexion")) becomeHost();
             }, 3000);
         });
 
         peer.on('error', () => becomeHost());
     } catch (e) {
-        status.innerText = "❌ Erreur micro : " + e.message;
+        status.innerText = "❌ Autorisez le micro !";
     }
 }
 
 function becomeHost() {
     const hostPeer = new Peer(SECRET_ROOM + '-host');
-    hostPeer.on('open', () => { status.innerText = "🟢 En attente de l'ami..."; });
+    hostPeer.on('open', () => status.innerText = "🟢 En attente de l'ami...");
     hostPeer.on('call', (call) => {
         call.answer(localStream);
-        call.on('stream', stream => setupStream(stream));
+        handleCall(call);
     });
 }
 
-function setupStream(stream) {
-    remoteVideo.srcObject = stream;
-    status.innerText = "⚠️ Quelqu'un est en ligne !";
-    btnStart.style.display = "block";
+function handleCall(call) {
+    call.on('stream', (stream) => {
+        status.innerText = "⚠️ Quelqu'un parle ! Cliquez sur le bouton.";
+        btnPlay.style.display = "block";
+        
+        // On attache le flux à notre objet audio
+        remoteAudio.srcObject = stream;
 
-    btnStart.onclick = async () => {
-        await remoteVideo.play();
-        status.innerText = "✅ EN LIGNE";
-        btnStart.style.display = "none";
-        loadSpeakers();
-    };
+        btnPlay.onclick = () => {
+            remoteAudio.play().then(() => {
+                status.innerText = "✅ EN LIGNE (Son actif)";
+                btnPlay.style.display = "none";
+            }).catch(err => {
+                console.error("Erreur lecture :", err);
+                status.innerText = "❌ Erreur son : " + err.message;
+            });
+        };
+    });
 }
 
-// Gestion des haut-parleurs
-async function loadSpeakers() {
-    if (!navigator.mediaDevices.enumerateDevices) return;
-
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const outputs = devices.filter(d => d.kind === 'audiooutput');
-
-    if (outputs.length > 0) {
-        speakerSelect.innerHTML = '';
-        outputs.forEach(device => {
-            const opt = document.createElement('option');
-            opt.value = device.deviceId;
-            opt.text = device.label || `Sortie ${speakerSelect.length + 1}`;
-            speakerSelect.appendChild(opt);
-        });
-        speakerBox.style.display = 'block';
-    }
-}
-
-speakerSelect.onchange = async () => {
-    if (remoteVideo.setSinkId) {
-        try {
-            await remoteVideo.setSinkId(speakerSelect.value);
-        } catch (err) {
-            alert("Erreur de changement de sortie : " + err);
-        }
-    } else {
-        alert("Votre navigateur ne permet pas de choisir la sortie audio.");
-    }
-};
-
-init();
+start();
