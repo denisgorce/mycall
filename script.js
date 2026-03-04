@@ -1,35 +1,26 @@
 const SECRET_ROOM = "salon-unique-radio-123"; 
 let localStream;
+let remoteAudio = new Audio(); // On crée l'objet audio globalement
 const status = document.getElementById('status');
+const btnSpeaker = document.getElementById('btn-speaker');
+const btnStart = document.getElementById('btn-start');
 
 async function start() {
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         status.innerText = "🎤 Micro prêt. Recherche du partenaire...";
         
-        // On essaie d'abord de voir si l'hôte existe
-        const peer = new Peer(); // On prend un ID aléatoire au départ
-
+        const peer = new Peer(); 
         peer.on('open', () => {
-            // On tente d'appeler l'hôte
             const call = peer.call(SECRET_ROOM + '-host', localStream);
-            
-            // Si on reçoit une réponse, on est l'invité
-            call.on('stream', stream => playStream(stream));
+            call.on('stream', stream => setupRemoteAudio(stream));
 
-            // Si après 3 secondes on n'a pas de réponse, on essaie de devenir l'Hôte
             setTimeout(() => {
-                if (status.innerText !== "✅ CONNECTÉ !") {
-                    becomeHost();
-                }
+                if (status.innerText.indexOf("✅") === -1) becomeHost();
             }, 3000);
         });
 
-        peer.on('error', (err) => {
-            console.log("Erreur tentative :", err.type);
-            becomeHost();
-        });
-
+        peer.on('error', () => becomeHost());
     } catch (e) {
         status.innerText = "❌ Erreur Micro : " + e.message;
     }
@@ -37,33 +28,45 @@ async function start() {
 
 function becomeHost() {
     const hostPeer = new Peer(SECRET_ROOM + '-host');
-    
-    hostPeer.on('open', () => {
-        status.innerText = "🟢 Vous êtes l'HÔTE. En attente de l'ami...";
-    });
-
+    hostPeer.on('open', () => { status.innerText = "🟢 En attente de l'ami..."; });
     hostPeer.on('call', (call) => {
-        status.innerText = "📞 Appel entrant...";
         call.answer(localStream);
-        call.on('stream', stream => playStream(stream));
-    });
-
-    hostPeer.on('error', (err) => {
-        if (err.type === 'id-taken') {
-            status.innerText = "🤝 Salon occupé, réessai...";
-            setTimeout(start, 2000); // On recommence la boucle
-        }
+        call.on('stream', stream => setupRemoteAudio(stream));
     });
 }
 
-function playStream(remoteStream) {
-    const audio = new Audio();
-    audio.srcObject = remoteStream;
-    audio.play().catch(() => {
-        status.innerText = "⚠️ Cliquez ici pour activer le son !";
-    });
-    status.innerText = "✅ CONNECTÉ !";
+function setupRemoteAudio(stream) {
+    remoteAudio.srcObject = stream;
+    status.innerText = "👉 CLIQUEZ SUR LE BOUTON VERT";
+    btnStart.style.display = "block";
+
+    btnStart.onclick = () => {
+        remoteAudio.play();
+        status.innerText = "✅ CONNECTÉ !";
+        btnStart.style.display = "none";
+        checkSpeakerOptions(); // On vérifie si on peut changer de haut-parleur
+    };
 }
 
-// On démarre
+async function checkSpeakerOptions() {
+    // Si le navigateur supporte le changement de sortie audio
+    if (typeof remoteAudio.setSinkId !== 'undefined') {
+        btnSpeaker.style.display = "block";
+        let isLoudspeaker = false;
+
+        btnSpeaker.onclick = async () => {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const speakers = devices.filter(d => d.kind === 'audiooutput');
+            
+            // On bascule entre les périphériques trouvés
+            isLoudspeaker = !isLoudspeaker;
+            if (speakers.length > 1) {
+                // Sur certains Android, l'index 0 est le petit et 1 est le grand
+                await remoteAudio.setSinkId(speakers[isLoudspeaker ? 1 : 0].deviceId);
+            }
+            btnSpeaker.innerText = isLoudspeaker ? "MODE DISCRET (OREILLE) 👂" : "GRAND HAUT-PARLEUR 📢";
+        };
+    }
+}
+
 start();
