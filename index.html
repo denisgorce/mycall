@@ -4,29 +4,36 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Directe</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
-        #status { margin: 20px; padding: 15px; border-radius: 8px; background: white; font-weight: bold; }
-        .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        button { padding: 15px 25px; font-size: 16px; cursor: pointer; border-radius: 50px; border: none; width: 80%; max-width: 300px; }
-        #btn-speaker { background: #007bff; color: white; display: none; }
-        #btn-start { background: #28a745; color: white; }
+        body { font-family: -apple-system, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+        #status { margin: 20px 0; font-weight: bold; color: #007bff; min-height: 24px; }
+        button { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        #btn-start { background: #28a745; color: white; display: none; }
+        #btn-start:active { background: #218838; }
+        .speaker-box { margin-top: 20px; text-align: left; display: none; }
+        select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-top: 5px; }
+        .reload-btn { background: #6c757d; color: white; margin-top: 20px; font-size: 14px; }
     </style>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    </head>
+</head>
 <body>
-    <h1>📞 Ligne Privée</h1>
-    <div id="status">Initialisation du micro...</div>
 
-    <div class="controls">
-        <button id="btn-start">ACTIVER LE SON 🔊</button>
-        <button id="btn-speaker">PASSER SUR LE HAUT-PARLEUR 📢</button>
-        <button onclick="location.reload()" style="background:#ccc;">Relancer la page</button>
+<div class="card">
+    <h1>📻 Radio Directe</h1>
+    <div id="status">Chargement du micro...</div>
+
+    <button id="btn-start">▶️ ACTIVER LE SON</button>
+
+    <div id="speaker-box" class="speaker-box">
+        <label>🔊 Sortie Audio :</label>
+        <select id="speaker-select"></select>
     </div>
 
-    <script src="script.js"></script>
+    <button class="reload-btn" onclick="location.reload()">🔄 Redémarrer</button>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
