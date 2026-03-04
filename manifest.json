@@ -1,0 +1,11 @@
+{
+  "name": "Mon Talkie Walkie",
+  "short_name": "Talkie",
+  "start_url": "/votre-projet/#salon",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
