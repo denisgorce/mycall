@@ -1,68 +1,73 @@
-const SECRET_ID = "votre-code-unique-2026"; // CHANGEZ MOI !
+const SECRET_ID = "votre-code-unique-2026"; 
 const btn = document.getElementById('start-btn');
 const status = document.getElementById('status');
-let localStream;
 
-btn.onclick = async () => {
-    btn.disabled = true;
-    status.innerText = "Accès micro...";
+btn.onclick = function() {
+    status.innerText = "Demande micro...";
     
-    try {
-        // 1. Capturer le micro (obligatoire avant d'appeler)
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        btn.innerText = "CONNEXION...";
-        initPeer();
-    } catch (e) {
-        status.innerText = "Erreur micro : " + e.message;
-        btn.disabled = false;
+    // Test de compatibilité
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Votre navigateur ne supporte pas l'audio (vérifiez le HTTPS)");
+        return;
     }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+            status.innerText = "Micro OK. Connexion Peer...";
+            startPeer(stream);
+        })
+        .catch(function(err) {
+            alert("Erreur micro : " + err.name);
+            status.innerText = "Accès refusé.";
+        });
 };
 
-function initPeer() {
-    // On tente de prendre l'ID fixe
+function startPeer(localStream) {
+    // On charge PeerJS dynamiquement si besoin, mais ici on suppose qu'il est là
     const peer = new Peer(SECRET_ID);
 
-    peer.on('open', (id) => {
+    peer.on('open', function() {
         status.innerText = "En attente de l'autre...";
-        btn.innerText = "À L'ÉCOUTE";
+        btn.innerText = "PRÊT";
+        btn.style.background = "#555";
     });
 
-    // Si on reçoit un appel
-    peer.on('call', (call) => {
+    peer.on('call', function(call) {
         status.innerText = "Appel reçu !";
         call.answer(localStream);
-        connectAudio(call);
+        setupAudio(call);
     });
 
-    // SI L'ID EST DÉJÀ PRIS (L'autre est déjà connecté)
-    peer.on('error', (err) => {
+    peer.on('error', function(err) {
         if (err.type === 'id-taken') {
-            status.innerText = "L'autre est là, je l'appelle...";
-            // On crée un peer avec un ID aléatoire pour appeler l'ID fixe
+            status.innerText = "L'autre est là, connexion...";
             const guest = new Peer();
-            guest.on('open', () => {
+            guest.on('open', function() {
                 const call = guest.call(SECRET_ID, localStream);
-                connectAudio(call);
+                setupAudio(call);
             });
         } else {
-            status.innerText = "Erreur : " + err.type;
-            btn.disabled = false;
+            alert("Erreur PeerJS : " + err.type);
         }
     });
 }
 
-function connectAudio(call) {
-    call.on('stream', (remoteStream) => {
+function setupAudio(call) {
+    call.on('stream', function(remoteStream) {
         status.innerText = "✅ CONNECTÉ";
         btn.innerText = "EN LIGNE";
-        btn.classList.add('active');
+        btn.style.background = "#28a745";
 
-        // Création de l'élément audio pour Android
-        const audio = new Audio();
+        const audio = document.createElement('audio');
         audio.srcObject = remoteStream;
-        audio.play().catch(() => {
-            status.innerText = "Cliquez pour activer le son";
-            document.body.onclick = () => audio.play();
+        audio.autoplay = true;
+        audio.controls = false;
+        document.body.appendChild(audio);
+        
+        // Force la lecture pour Android
+        audio.play().catch(function() {
+            status.innerText = "Appuyez ici pour entendre";
+            document.body.onclick = function() { audio.play(); };
         });
     });
 }
