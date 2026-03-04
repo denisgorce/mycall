@@ -1,50 +1,54 @@
-// 1. Si pas de salon dans l'URL, on en crée un au hasard
-if (!window.location.hash) {
-    const randomRoom = Math.random().toString(36).substring(7);
-    window.location.hash = randomRoom;
-}
+// On définit un nom de salon unique et fixe pour vous deux
+const SECRET_ROOM = "salon-prive-unique-789"; 
 
-const roomName = window.location.hash.replace('#', '');
 let localStream;
-let isMuted = false;
+const status = document.getElementById('status');
 
-// On lance l'application
-initVoiceChat();
+// Lancer l'application immédiatement au chargement
+window.onload = initVoiceChat;
 
 async function initVoiceChat() {
-    const status = document.getElementById('status');
-
     try {
-        // Demander l'accès au micro
+        // 1. On demande le micro
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        status.innerText = "Connecté au salon : " + roomName;
+        status.innerText = "🎤 Micro activé. Recherche de l'autre personne...";
+        
+        // 2. On essaie d'être l'HÔTE
+        connectAsHost();
     } catch (err) {
-        status.innerText = "Erreur micro : " + err.message;
-        return;
+        status.innerText = "❌ Erreur micro : " + err.message;
     }
+}
 
-    // Tentative de connexion (Hôte)
-    const peer = new Peer(roomName + '-host');
+function connectAsHost() {
+    const peer = new Peer(SECRET_ROOM + '-host');
 
     peer.on('open', () => {
-        status.innerText = "🟢 En attente de votre ami sur : #" + roomName;
+        status.innerText = "🟢 En attente de votre ami...";
     });
 
     peer.on('call', (call) => {
-        status.innerText = "📞 Appel en cours...";
+        status.innerText = "📞 Appel entrant, connexion...";
         call.answer(localStream);
         handleStream(call);
     });
 
-    // Si le salon 'host' existe déjà, on devient 'guest'
+    // 3. SI L'HÔTE EXISTE DÉJÀ (votre ami est déjà là)
     peer.on('error', (err) => {
         if (err.type === 'id-taken') {
-            const guestPeer = new Peer(roomName + '-guest-' + Math.floor(Math.random() * 100));
-            guestPeer.on('open', () => {
-                const call = guestPeer.call(roomName + '-host', localStream);
-                handleStream(call);
-            });
+            status.innerText = "🤝 Ami trouvé ! Connexion en cours...";
+            connectAsGuest();
         }
+    });
+}
+
+function connectAsGuest() {
+    // On prend un ID temporaire pour l'invité
+    const guestPeer = new Peer(); 
+    
+    guestPeer.on('open', () => {
+        const call = guestPeer.call(SECRET_ROOM + '-host', localStream);
+        handleStream(call);
     });
 }
 
@@ -53,13 +57,6 @@ function handleStream(call) {
         const audio = new Audio();
         audio.srcObject = remoteStream;
         audio.play();
-        document.getElementById('status').innerText = "✅ En ligne !";
+        status.innerText = "✅ EN LIGNE ! Vous pouvez parler.";
     });
-}
-
-// Fonction pour couper/activer le micro (à lier à un bouton si vous voulez)
-function toggleMute() {
-    isMuted = !isMuted;
-    localStream.getAudioTracks()[0].enabled = !isMuted;
-    alert(isMuted ? "Micro coupé" : "Micro activé");
 }
