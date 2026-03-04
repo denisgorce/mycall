@@ -4,36 +4,26 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio Directe</title>
-    <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; color: #333; }
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
-        #status { margin: 20px 0; font-weight: bold; color: #007bff; min-height: 24px; }
-        button { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        #btn-start { background: #28a745; color: white; display: none; }
-        #btn-start:active { background: #218838; }
-        .speaker-box { margin-top: 20px; text-align: left; display: none; }
-        select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-top: 5px; }
-        .reload-btn { background: #6c757d; color: white; margin-top: 20px; font-size: 14px; }
+        #status { margin: 20px 0; font-weight: bold; color: #007bff; }
+        button { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+        #btn-play { background: #28a745; color: white; display: none; }
+        .info { font-size: 12px; color: #666; margin-top: 10px; }
     </style>
 </head>
 <body>
-
-<div class="card">
-    <h1>📻 Radio Directe</h1>
-    <div id="status">Chargement du micro...</div>
-
-    <button id="btn-start">▶️ ACTIVER LE SON</button>
-
-    <div id="speaker-box" class="speaker-box">
-        <label>🔊 Sortie Audio :</label>
-        <select id="speaker-select"></select>
+    <div class="card">
+        <h1>📞 Ligne Directe</h1>
+        <div id="status">Vérification micro...</div>
+        
+        <button id="btn-play">🔊 ACTIVER LE SON (FORCE)</button>
+        
+        <div class="info">Si vous n'entendez rien, vérifiez que le volume "Média" est à fond et que vous n'êtes pas en mode silencieux.</div>
+        <button onclick="location.reload()" style="background:#ccc; margin-top:20px;">🔄 Relancer</button>
     </div>
-
-    <button class="reload-btn" onclick="location.reload()">🔄 Redémarrer</button>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
