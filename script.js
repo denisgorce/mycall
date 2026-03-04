@@ -1,6 +1,12 @@
 // 1. On récupère le nom du salon dans l'URL (ex: #mon-salon-prive)
-const roomName = window.location.hash.replace('#', '');
+// Si pas de hash dans l'URL, on en génère un au hasard et on recharge
+if (!window.location.hash) {
+    const randomRoom = Math.random().toString(36).substring(7);
+    window.location.hash = randomRoom;
+}
 
+const roomName = window.location.hash.replace('#', '');
+initVoiceChat(); // On lance directement la fonction
 if (!roomName) {
     document.body.innerHTML = "<h1>Erreur</h1><p>Veuillez ajouter un nom de salon à l'URL, ex: index.html#le-nom-du-salon</p>";
 } else {
