@@ -1,62 +1,56 @@
-const SECRET_ROOM = "salon-prive-789"; 
-let localStream;
+const roomName = window.location.hash.replace('#', '') || 'salon-defaut';
+document.getElementById('room-id').innerText = roomName;
+
+const btn = document.getElementById('start-btn');
 const status = document.getElementById('status');
-const btnPlay = document.getElementById('btn-play');
 
-// Création d'un élément audio unique
-const remoteAudio = new Audio();
-remoteAudio.autoplay = true;
+btn.addEventListener('click', () => {
+    btn.style.display = 'none'; // On cache le bouton après le clic
+    initVoiceChat();
+});
 
-async function start() {
+async function initVoiceChat() {
+    let localStream;
     try {
-        // 1. Capture du micro
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        status.innerText = "🎤 Micro prêt. Connexion...";
-
-        const peer = new Peer();
-
-        peer.on('open', () => {
-            const call = peer.call(SECRET_ROOM + '-host', localStream);
-            if (call) handleCall(call);
-
-            setTimeout(() => {
-                if (status.innerText.includes("Connexion")) becomeHost();
-            }, 3000);
-        });
-
-        peer.on('error', () => becomeHost());
-    } catch (e) {
-        status.innerText = "❌ Autorisez le micro !";
+        // Demande explicite du micro
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        status.innerText = "Micro OK. Connexion...";
+    } catch (err) {
+        status.innerText = "Erreur Micro : " + err.message;
+        return;
     }
-}
 
-function becomeHost() {
-    const hostPeer = new Peer(SECRET_ROOM + '-host');
-    hostPeer.on('open', () => status.innerText = "🟢 En attente de l'ami...");
-    hostPeer.on('call', (call) => {
+    const peer = new Peer(roomName + '-host');
+
+    peer.on('open', () => {
+        status.innerText = "En attente d'un ami...";
+    });
+
+    peer.on('call', (call) => {
         call.answer(localStream);
-        handleCall(call);
+        handleStream(call);
     });
-}
 
-function handleCall(call) {
-    call.on('stream', (stream) => {
-        status.innerText = "⚠️ Quelqu'un parle ! Cliquez sur le bouton.";
-        btnPlay.style.display = "block";
-        
-        // On attache le flux à notre objet audio
-        remoteAudio.srcObject = stream;
-
-        btnPlay.onclick = () => {
-            remoteAudio.play().then(() => {
-                status.innerText = "✅ EN LIGNE (Son actif)";
-                btnPlay.style.display = "none";
-            }).catch(err => {
-                console.error("Erreur lecture :", err);
-                status.innerText = "❌ Erreur son : " + err.message;
+    peer.on('error', (err) => {
+        if (err.type === 'id-taken') {
+            const guestPeer = new Peer(); // ID aléatoire pour l'invité
+            guestPeer.on('open', () => {
+                const call = guestPeer.call(roomName + '-host', localStream);
+                handleStream(call);
             });
-        };
+        }
     });
 }
 
-start();
+function handleStream(call) {
+    call.on('stream', (remoteStream) => {
+        status.innerText = "✅ EN DIRECT";
+        const audio = new Audio();
+        audio.srcObject = remoteStream;
+        // Sur mobile, play() doit être appelé suite à une interaction utilisateur
+        audio.play().catch(e => {
+            status.innerText = "Cliquez n'importe où pour entendre le son";
+            document.body.addEventListener('click', () => audio.play(), {once: true});
+        });
+    });
+}
