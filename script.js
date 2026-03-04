@@ -1,28 +1,35 @@
 const SECRET_ROOM = "salon-unique-radio-123"; 
 let localStream;
-let remoteAudio = new Audio(); // On crée l'objet audio globalement
-const status = document.getElementById('status');
-const btnSpeaker = document.getElementById('btn-speaker');
-const btnStart = document.getElementById('btn-start');
+let remoteVideo = document.createElement('video'); // Utilisation de <video> pour forcer le HP sur mobile
+remoteVideo.setAttribute('playsinline', 'true');
 
-async function start() {
+const status = document.getElementById('status');
+const btnStart = document.getElementById('btn-start');
+const speakerBox = document.getElementById('speaker-box');
+const speakerSelect = document.getElementById('speaker-select');
+
+// Initialisation
+async function init() {
     try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        status.innerText = "🎤 Micro prêt. Recherche du partenaire...";
+        status.innerText = "🎤 Micro OK. Recherche du partenaire...";
         
         const peer = new Peer(); 
-        peer.on('open', () => {
-            const call = peer.call(SECRET_ROOM + '-host', localStream);
-            call.on('stream', stream => setupRemoteAudio(stream));
 
+        peer.on('open', () => {
+            // Tentative d'appel vers l'hôte
+            const call = peer.call(SECRET_ROOM + '-host', localStream);
+            call.on('stream', stream => setupStream(stream));
+
+            // Si pas de réponse après 3s, on devient l'hôte
             setTimeout(() => {
-                if (status.innerText.indexOf("✅") === -1) becomeHost();
+                if (status.innerText.includes("Recherche")) becomeHost();
             }, 3000);
         });
 
         peer.on('error', () => becomeHost());
     } catch (e) {
-        status.innerText = "❌ Erreur Micro : " + e.message;
+        status.innerText = "❌ Erreur micro : " + e.message;
     }
 }
 
@@ -31,42 +38,52 @@ function becomeHost() {
     hostPeer.on('open', () => { status.innerText = "🟢 En attente de l'ami..."; });
     hostPeer.on('call', (call) => {
         call.answer(localStream);
-        call.on('stream', stream => setupRemoteAudio(stream));
+        call.on('stream', stream => setupStream(stream));
     });
 }
 
-function setupRemoteAudio(stream) {
-    remoteAudio.srcObject = stream;
-    status.innerText = "👉 CLIQUEZ SUR LE BOUTON VERT";
+function setupStream(stream) {
+    remoteVideo.srcObject = stream;
+    status.innerText = "⚠️ Quelqu'un est en ligne !";
     btnStart.style.display = "block";
 
-    btnStart.onclick = () => {
-        remoteAudio.play();
-        status.innerText = "✅ CONNECTÉ !";
+    btnStart.onclick = async () => {
+        await remoteVideo.play();
+        status.innerText = "✅ EN LIGNE";
         btnStart.style.display = "none";
-        checkSpeakerOptions(); // On vérifie si on peut changer de haut-parleur
+        loadSpeakers();
     };
 }
 
-async function checkSpeakerOptions() {
-    // Si le navigateur supporte le changement de sortie audio
-    if (typeof remoteAudio.setSinkId !== 'undefined') {
-        btnSpeaker.style.display = "block";
-        let isLoudspeaker = false;
+// Gestion des haut-parleurs
+async function loadSpeakers() {
+    if (!navigator.mediaDevices.enumerateDevices) return;
 
-        btnSpeaker.onclick = async () => {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const speakers = devices.filter(d => d.kind === 'audiooutput');
-            
-            // On bascule entre les périphériques trouvés
-            isLoudspeaker = !isLoudspeaker;
-            if (speakers.length > 1) {
-                // Sur certains Android, l'index 0 est le petit et 1 est le grand
-                await remoteAudio.setSinkId(speakers[isLoudspeaker ? 1 : 0].deviceId);
-            }
-            btnSpeaker.innerText = isLoudspeaker ? "MODE DISCRET (OREILLE) 👂" : "GRAND HAUT-PARLEUR 📢";
-        };
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter(d => d.kind === 'audiooutput');
+
+    if (outputs.length > 0) {
+        speakerSelect.innerHTML = '';
+        outputs.forEach(device => {
+            const opt = document.createElement('option');
+            opt.value = device.deviceId;
+            opt.text = device.label || `Sortie ${speakerSelect.length + 1}`;
+            speakerSelect.appendChild(opt);
+        });
+        speakerBox.style.display = 'block';
     }
 }
 
-start();
+speakerSelect.onchange = async () => {
+    if (remoteVideo.setSinkId) {
+        try {
+            await remoteVideo.setSinkId(speakerSelect.value);
+        } catch (err) {
+            alert("Erreur de changement de sortie : " + err);
+        }
+    } else {
+        alert("Votre navigateur ne permet pas de choisir la sortie audio.");
+    }
+};
+
+init();
