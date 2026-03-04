@@ -1,11 +1,18 @@
 {
-  "name": "Mon Talkie Walkie",
-  "short_name": "Talkie",
-  "start_url": "/votre-projet/#salon",
+  "name": "Radio Directe Privee",
+  "short_name": "RadioDirect",
+  "description": "Communication orale instantanée entre deux personnes",
+  "start_url": "/NOM-DE-VOTRE-DEPOT/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#f0f0f0",
+  "theme_color": "#007bff",
+  "orientation": "portrait",
   "icons": [
-    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3616/3616230.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
