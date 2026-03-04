@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <title>Voice Chat Express</title>
-</head>
-<body>
-    <h1>Audio Direct</h1>
-    <p>Votre ID : <strong id="my-id">...</strong></p>
-    
-    <input type="text" id="peer-id" placeholder="ID de l'ami">
-    <button id="call-btn">Appeler</button>
-
-    <p id="status">Statut : Prêt</p>
-
+    <title>Appel Direct</title>
+    <meta charset="utf-8">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>📞 Ligne Directe</h1>
+    <div id="status" style="font-weight: bold; color: blue;">Initialisation...</div>
+    <br>
+    <button onclick="location.reload()" style="padding: 10px;">Relancer si besoin</button>
+
     <script src="script.js"></script>
-    <link rel="manifest" href="manifest.json">
 </body>
 </html>
