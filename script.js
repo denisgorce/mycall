@@ -1,46 +1,55 @@
-const SECRET_ROOM = "salon-prive-unique-789"; 
+const SECRET_ROOM = "salon-unique-radio-123"; 
 let localStream;
 const status = document.getElementById('status');
 
 async function start() {
     try {
-        // 1. Demander le micro
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        status.innerText = "🎤 Micro OK. Connexion...";
+        status.innerText = "🎤 Micro OK. Tentative de connexion...";
         
-        // 2. Tenter d'être l'Hôte
+        // On essaie d'être l'hôte
         const peer = new Peer(SECRET_ROOM + '-host');
 
-        peer.on('open', () => {
-            status.innerText = "🟢 En ligne (Hôte). En attente de l'autre...";
+        peer.on('open', (id) => {
+            status.innerText = "🟢 Vous êtes l'HÔTE. En attente de l'ami...";
         });
 
         peer.on('call', (call) => {
-            status.innerText = "📢 Appel reçu !";
+            status.innerText = "📞 Appel reçu ! Connexion audio...";
             call.answer(localStream);
-            call.on('stream', stream => playStream(stream));
+            setupAudio(call);
         });
 
-        // 3. Si l'Hôte existe déjà, devenir Invité
         peer.on('error', (err) => {
-        if (err.type === 'id-taken') { // Ah ! Quelqu'un est déjà l'hôte !
-            const guest = new Peer(); // Alors moi, je prends un nom au hasard
-            guest.on('open', () => {
-                // Et j'appelle tout de suite "salon-prive-unique-789-host"
-                const call = guest.call(SECRET_ROOM + '-host', localStream);
-            });
-        }
-    });
+            if (err.type === 'id-taken') {
+                status.innerText = "🤝 Salon trouvé. Connexion comme INVITÉ...";
+                connectAsGuest();
+            } else {
+                status.innerText = "❌ Erreur Peer : " + err.type;
+            }
+        });
     } catch (e) {
-        status.innerText = "❌ Erreur : " + e.message;
+        status.innerText = "❌ Erreur Micro : " + e.message;
     }
 }
 
-function playStream(remoteStream) {
-    const audio = new Audio();
-    audio.srcObject = remoteStream;
-    audio.play();
-    status.innerText = "✅ CONNECTÉ !";
+function connectAsGuest() {
+    const guest = new Peer(); // ID aléatoire pour l'invité
+    guest.on('open', () => {
+        const call = guest.call(SECRET_ROOM + '-host', localStream);
+        setupAudio(call);
+    });
+}
+
+function setupAudio(call) {
+    call.on('stream', (remoteStream) => {
+        const audio = new Audio();
+        audio.srcObject = remoteStream;
+        audio.play().catch(e => {
+            status.innerText = "⚠️ Cliquez sur la page pour activer le son !";
+        });
+        status.innerText = "✅ EN CONVERSATION !";
+    });
 }
 
 start();
