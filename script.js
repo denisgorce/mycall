@@ -23,14 +23,14 @@ async function start() {
 
         // 3. Si l'Hôte existe déjà, devenir Invité
         peer.on('error', (err) => {
-            if (err.type === 'id-taken') {
-                const guest = new Peer();
-                guest.on('open', () => {
-                    const call = guest.call(SECRET_ROOM + '-host', localStream);
-                    call.on('stream', stream => playStream(stream));
-                });
-            }
-        });
+        if (err.type === 'id-taken') { // Ah ! Quelqu'un est déjà l'hôte !
+            const guest = new Peer(); // Alors moi, je prends un nom au hasard
+            guest.on('open', () => {
+                // Et j'appelle tout de suite "salon-prive-unique-789-host"
+                const call = guest.call(SECRET_ROOM + '-host', localStream);
+            });
+        }
+    });
     } catch (e) {
         status.innerText = "❌ Erreur : " + e.message;
     }
