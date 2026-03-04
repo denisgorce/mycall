@@ -1,15 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Appel Direct</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Directe</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
+        #status { margin: 20px; padding: 15px; border-radius: 8px; background: white; font-weight: bold; }
+        .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        button { padding: 15px 25px; font-size: 16px; cursor: pointer; border-radius: 50px; border: none; width: 80%; max-width: 300px; }
+        #btn-speaker { background: #007bff; color: white; display: none; }
+        #btn-start { background: #28a745; color: white; }
+    </style>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>📞 Ligne Directe</h1>
-    <div id="status" style="font-weight: bold; color: blue;">Initialisation...</div>
-    <br>
-    <button onclick="location.reload()" style="padding: 10px;">Relancer si besoin</button>
+<body>
+    <h1>📞 Ligne Privée</h1>
+    <div id="status">Initialisation du micro...</div>
+
+    <div class="controls">
+        <button id="btn-start">ACTIVER LE SON 🔊</button>
+        <button id="btn-speaker">PASSER SUR LE HAUT-PARLEUR 📢</button>
+        <button onclick="location.reload()" style="background:#ccc;">Relancer la page</button>
+    </div>
 
     <script src="script.js"></script>
 </body>
