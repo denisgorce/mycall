@@ -1,4 +1,4 @@
-const CACHE_NAME = 'talkie-v1';
+const CACHE_NAME = 'ligne-directe-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -6,14 +6,12 @@ const ASSETS = [
   './manifest.json'
 ];
 
-// Installation : on met les fichiers en cache pour que l'app soit rapide
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
 
-// Intercepter les requêtes pour servir le cache si on est hors-ligne
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
