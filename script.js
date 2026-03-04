@@ -1,101 +1,68 @@
-const SECRET_KEY = "votre-nom-unique-ici"; 
+const SECRET_ID = "votre-code-unique-2026"; // CHANGEZ MOI !
+const btn = document.getElementById('start-btn');
 const status = document.getElementById('status');
-const callBtn = document.getElementById('call-btn');
-const hangupBtn = document.getElementById('hangup-btn');
-const ringtone = document.getElementById('ringtone');
-const outputSelect = document.getElementById('audio-output');
+let localStream;
 
-let peer, localStream, currentCall, dataConn;
+btn.onclick = async () => {
+    btn.disabled = true;
+    status.innerText = "Accès micro...";
+    
+    try {
+        // 1. Capturer le micro (obligatoire avant d'appeler)
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        btn.innerText = "CONNEXION...";
+        initPeer();
+    } catch (e) {
+        status.innerText = "Erreur micro : " + e.message;
+        btn.disabled = false;
+    }
+};
 
-// 1. Initialisation au chargement
-window.onload = () => {
-    peer = new Peer(SECRET_KEY + '-host');
+function initPeer() {
+    // On tente de prendre l'ID fixe
+    const peer = new Peer(SECRET_ID);
 
-    peer.on('open', () => { status.innerText = "Prêt (Hôte)"; });
+    peer.on('open', (id) => {
+        status.innerText = "En attente de l'autre...";
+        btn.innerText = "À L'ÉCOUTE";
+    });
 
-    // Si on est le deuxième (l'invité)
+    // Si on reçoit un appel
+    peer.on('call', (call) => {
+        status.innerText = "Appel reçu !";
+        call.answer(localStream);
+        connectAudio(call);
+    });
+
+    // SI L'ID EST DÉJÀ PRIS (L'autre est déjà connecté)
     peer.on('error', (err) => {
         if (err.type === 'id-taken') {
-            peer = new Peer(SECRET_KEY + '-guest');
-            peer.on('open', () => { status.innerText = "Prêt (Invité)"; });
-        }
-    });
-
-    // Écouter les appels entrants
-    peer.on('call', (call) => {
-        ringtone.play();
-        status.innerText = "Appel entrant...";
-        callBtn.innerText = "RÉPONDRE";
-        callBtn.classList.add('ringing');
-        currentCall = call;
-    });
-
-    // Lister les sorties audio (si supporté par le navigateur)
-    if (navigator.mediaDevices.enumerateDevices) {
-        navigator.mediaDevices.enumerateDevices().then(devices => {
-            devices.filter(d => d.kind === 'audiooutput').forEach(device => {
-                const opt = document.createElement('option');
-                opt.value = device.deviceId;
-                opt.text = device.label || `Haut-parleur ${outputSelect.length + 1}`;
-                outputSelect.add(opt);
+            status.innerText = "L'autre est là, je l'appelle...";
+            // On crée un peer avec un ID aléatoire pour appeler l'ID fixe
+            const guest = new Peer();
+            guest.on('open', () => {
+                const call = guest.call(SECRET_ID, localStream);
+                connectAudio(call);
             });
-        });
-    }
-};
-
-// 2. Bouton Appeler / Répondre
-callBtn.onclick = async () => {
-    ringtone.pause();
-    callBtn.classList.remove('ringing');
-    
-    if (!localStream) {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    }
-
-    if (currentCall && !currentCall.open) {
-        // On répond à un appel
-        currentCall.answer(localStream);
-        setupStream(currentCall);
-    } else {
-        // On lance un nouvel appel
-        const target = peer.id.includes('-host') ? SECRET_KEY + '-guest' : SECRET_KEY + '-host';
-        const call = peer.call(target, localStream);
-        if (call) {
-            status.innerText = "Appel en cours...";
-            setupStream(call);
+        } else {
+            status.innerText = "Erreur : " + err.type;
+            btn.disabled = false;
         }
-    }
-};
-
-function setupStream(call) {
-    currentCall = call;
-    call.on('stream', (remoteStream) => {
-        status.innerText = "✅ EN COMMUNICATION";
-        callBtn.style.display = 'none';
-        hangupBtn.style.display = 'block';
-        
-        const audio = new Audio();
-        audio.srcObject = remoteStream;
-        
-        // Changer la sortie audio si sélectionnée
-        if (outputSelect.value && audio.setSinkId) {
-            audio.setSinkId(outputSelect.value);
-        }
-        
-        audio.play();
     });
 }
 
-// 3. Bouton Raccrocher
-hangupBtn.onclick = () => {
-    if (currentCall) currentCall.close();
-    location.reload(); // Moyen le plus propre de réinitialiser PeerJS
-};
+function connectAudio(call) {
+    call.on('stream', (remoteStream) => {
+        status.innerText = "✅ CONNECTÉ";
+        btn.innerText = "EN LIGNE";
+        btn.classList.add('active');
 
-// Changement de sortie audio en direct
-outputSelect.onchange = () => {
-    const audios = document.querySelectorAll('audio');
-    audios.forEach(a => {
-        if (a.setSinkId) a.setSinkId(outputSelect.value);
+        // Création de l'élément audio pour Android
+        const audio = new Audio();
+        audio.srcObject = remoteStream;
+        audio.play().catch(() => {
+            status.innerText = "Cliquez pour activer le son";
+            document.body.onclick = () => audio.play();
+        });
     });
-};
+}
