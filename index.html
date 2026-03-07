@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NEXUS">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>NEXUS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
@@ -41,6 +41,9 @@ input[type=text]::placeholder{color:var(--m)}
 .name-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
 .nbtn{padding:14px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;color:var(--t);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;letter-spacing:.3px}
 .nbtn:hover,.nbtn:active{border-color:var(--a);background:rgba(0,212,255,.1);color:var(--a);transform:scale(.97)}
+.nbtn.active{border-color:var(--a);background:rgba(0,212,255,.12);color:var(--a)}
+.hchg{background:none;border:1px solid var(--bd);border-radius:6px;color:var(--m);cursor:pointer;font-size:13px;padding:3px 8px;transition:all .15s;flex-shrink:0}
+.hchg:hover{border-color:var(--a);color:var(--a)}
 .binstall{width:100%;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:8px;transition:all .15s}
 .binstall:hover{border-color:var(--a);color:var(--a)}
 .ios-hint{font-size:10px;color:var(--m);line-height:1.8;margin-top:12px;padding:10px;background:var(--s2);border-radius:8px;border:1px dashed var(--bd)}
@@ -217,6 +220,7 @@ select option{background:#101820}
   <div class="hdr">
     <div class="hlogo">NEXUS</div>
     <div class="hname">Connecté en tant que <b id="hMyName"></b></div>
+    <button class="hchg" id="bChangeName" title="Changer de nom">✎</button>
     <div class="hdot"></div>
   </div>
 
@@ -400,15 +404,28 @@ window.addEventListener('DOMContentLoaded', () => {
   $('sSpk').onchange    = changeSpk;
   $('sCam').onchange    = changeCam;
   $('pushBanner').onclick = requestPush;
+  $('bChangeName').onclick = changeName;
   $('modalCancel').onclick = closeAddContact;
   $('modalAdd').onclick    = confirmAddContact;
   $('modalBg').onclick     = e => { if(e.target===$('modalBg')) closeAddContact(); };
   $('newContactName').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddContact(); });
   // share URL shown in push banner area
 
+  // Auto-login si nom mémorisé
+  const savedName = localStorage.getItem('nexus_name');
+  if (savedName) {
+    myName = savedName;
+    // Highlight le bouton correspondant
+    document.querySelectorAll('.nbtn').forEach(b => {
+      if (b.textContent === savedName) b.classList.add('active');
+    });
+    // Auto-enter après un court délai pour laisser le DOM se stabiliser
+    setTimeout(() => _doEnter(), 100);
+  }
+
   // PWA install SW
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
       log('SW registered');
       // Écouter les messages du SW (accept/decline depuis notification)
       navigator.serviceWorker.addEventListener('message', e => {
@@ -431,6 +448,7 @@ async function enter() {
 }
 
 async function _doEnter() {
+  localStorage.setItem('nexus_name', myName);
   myId = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   $('hMyName').textContent = myName;
   $('lobby').style.display = 'none';
@@ -556,6 +574,21 @@ function renderLobbyButtons() {
   container.innerHTML = CONTACTS.map(n =>
     `<button class="nbtn" onclick="enterAs('${esc(n)}')">${esc(n)}</button>`
   ).join('');
+}
+
+// ── Changer de nom ───────────────────────────────────────
+function changeName() {
+  // Déconnecter proprement
+  send({ type: 'leave' });
+  ws?.close();
+  ws = null; wsOk = false;
+  localStorage.removeItem('nexus_name');
+  members = {};
+  // Retourner au lobby
+  $('app').classList.remove('on');
+  $('lobby').style.display = '';
+  // Retirer highlight actif
+  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('active'));
 }
 
 // ── Appel sortant ─────────────────────────────────────────

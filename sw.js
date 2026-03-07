@@ -19,8 +19,8 @@ self.addEventListener('push', e => {
   const title = data.title || '📞 Appel entrant';
   const options = {
     body:    data.body || 'Appuyez pour répondre',
-    icon:    '/icon-192.png',
-    badge:   '/icon-192.png',
+    icon:    './icon-192.png',
+    badge:   './icon-192.png',
     tag:     'nexus-call',
     renotify: true,
     requireInteraction: true,        // reste affiché jusqu'à action
@@ -57,7 +57,7 @@ self.addEventListener('notificationclick', e => {
         cs[0].focus();
         cs[0].postMessage({ type: 'push_accept', caller });
       } else {
-        clients.openWindow('/').then(c => {
+        clients.openWindow('/mycall/').then(c => {
           if (c) setTimeout(() => c.postMessage({ type: 'push_accept', caller }), 1500);
         });
       }
