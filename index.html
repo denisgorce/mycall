@@ -179,9 +179,15 @@ select option{background:#101820}
 .add-contact-btn:hover{border-color:var(--a);color:var(--a)}
 
 /* NOTIFICATIONS PUSH */
-.push-banner{background:var(--s2);border:1px solid rgba(255,149,0,.4);border-radius:8px;padding:10px 12px;margin:10px;font-size:10px;color:var(--o);display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
+.push-banner{background:var(--s2);border:1px solid rgba(255,149,0,.35);border-radius:10px;padding:12px 14px;margin:10px 10px 0;transition:all .15s}
 .push-banner:hover{border-color:var(--o)}
-.push-banner .pbi{font-size:18px;flex-shrink:0}
+.pb-main{display:flex;align-items:center;gap:10px}
+.pbi{font-size:20px;flex-shrink:0}
+.pb-text{flex:1;min-width:0}
+.pb-title{font-size:11px;color:var(--o);font-weight:500;margin-bottom:2px}
+.pb-sub{font-size:10px;color:var(--m)}
+.pb-btn{background:var(--o);border:none;border-radius:6px;color:#000;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:7px 12px;cursor:pointer;flex-shrink:0;transition:opacity .15s}
+.pb-btn:hover{opacity:.85}
 
 /* TOAST / NOTIF */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--a);border-radius:7px;padding:7px 14px;font-size:10px;color:var(--a);z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
@@ -233,8 +239,28 @@ select option{background:#101820}
   <!-- VUE CONTACTS -->
   <div class="view on" id="vContacts">
     <div id="pushBanner" class="push-banner" style="display:none">
-      <span class="pbi">🔔</span>
-      <span>Activer les notifications pour recevoir les appels même écran éteint</span>
+      <div class="pb-main">
+        <span class="pbi">🔔</span>
+        <div class="pb-text">
+          <div class="pb-title">Activer les notifications</div>
+          <div class="pb-sub">Recevez les appels même écran éteint</div>
+        </div>
+        <button class="pb-btn" id="pbBtn">Activer</button>
+      </div>
+    </div>
+    <!-- Modal instructions si notifications bloquées -->
+    <div class="modal-bg" id="pushBlockedModal">
+      <div class="modal">
+        <h3>🔔 Notifications bloquées</h3>
+        <p style="font-size:11px;color:var(--m);line-height:1.8;margin-bottom:16px">
+          Vous avez précédemment refusé les notifications.<br>
+          Pour les activer, suivez ces étapes :
+        </p>
+        <div id="pushInstructions" style="font-size:11px;color:var(--t);line-height:2;background:var(--s2);border-radius:8px;padding:12px;margin-bottom:16px"></div>
+        <div class="modal-btns">
+          <button class="mbtn-cancel" id="pushBlockedClose">Fermer</button>
+        </div>
+      </div>
     </div>
     <div class="cl" id="memberList"></div>
   </div>
@@ -405,7 +431,9 @@ window.addEventListener('DOMContentLoaded', () => {
   $('sMic').onchange    = changeMic;
   $('sSpk').onchange    = changeSpk;
   $('sCam').onchange    = changeCam;
-  $('pushBanner').onclick = requestPush;
+  $('pbBtn').onclick         = requestPush;
+  $('pushBlockedClose').onclick = () => $('pushBlockedModal').classList.remove('on');
+  $('pushBlockedModal').onclick = e => { if(e.target===$('pushBlockedModal')) $('pushBlockedModal').classList.remove('on'); };
   $('bChangeName').onclick = changeName;
   $('modalCancel').onclick = closeAddContact;
   $('modalAdd').onclick    = confirmAddContact;
@@ -923,19 +951,70 @@ async function fetchVapidKey() {
 }
 
 function checkPushBanner() {
-  if(!('Notification' in window)) return;
+  if(!('Notification' in window) || !('PushManager' in window)) return;
   if(Notification.permission === 'granted') { subscribePush(); return; }
-  if(Notification.permission !== 'denied') $('pushBanner').style.display='flex';
+  // Montrer la bannière que la permission soit 'default' ou 'denied'
+  // (si denied, requestPush() expliquera comment débloquer)
+  $('pushBanner').style.display = 'block';
+  if(Notification.permission === 'denied') {
+    $('pb-btn', $('pushBanner')) // handled in requestPush
+    const btn = document.getElementById('pbBtn');
+    if(btn) btn.textContent = 'Comment activer ?';
+  }
 }
 
 async function requestPush() {
-  $('pushBanner').style.display='none';
   if(!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return toast('Notifications push non supportées sur ce navigateur');
+    return showPushUnsupported();
   }
+  // Si déjà bloqué, montrer les instructions manuelles
+  if(Notification.permission === 'denied') {
+    showPushBlockedInstructions();
+    return;
+  }
+  // Demander la permission — affiche le vrai popup système
   const perm = await Notification.requestPermission();
-  if(perm === 'granted') subscribePush();
-  else toast('Notifications refusées');
+  if(perm === 'granted') {
+    $('pushBanner').style.display = 'none';
+    subscribePush();
+  } else if(perm === 'denied') {
+    // L'utilisateur vient de refuser → expliquer comment changer
+    showPushBlockedInstructions();
+  }
+}
+
+function showPushUnsupported() {
+  toast('Notifications non supportées sur ce navigateur');
+}
+
+function showPushBlockedInstructions() {
+  const instr = $('pushInstructions');
+  if (isIOS) {
+    instr.innerHTML = `
+      <b>Sur iPhone / iPad :</b><br>
+      Réglages → Notifications → Safari<br>
+      → Activez les notifications pour ce site<br><br>
+      <i style="color:var(--m)">Ou : Réglages → Safari → Notifications avancées</i>
+    `;
+  } else if (/Android/i.test(navigator.userAgent)) {
+    instr.innerHTML = `
+      <b>Sur Android (Chrome) :</b><br>
+      1. Appuyez sur ⋮ (menu Chrome) → Paramètres<br>
+      2. Confidentialité → Paramètres du site<br>
+      3. Notifications → <b>denisgorce.github.io</b><br>
+      4. Autorisez les notifications
+    `;
+  } else {
+    instr.innerHTML = `
+      <b>Sur Chrome / Edge :</b><br>
+      Cliquez sur 🔒 dans la barre d'adresse<br>
+      → Paramètres du site → Notifications → Autoriser<br><br>
+      <b>Sur Firefox :</b><br>
+      Cliquez sur 🔒 → Plus d'informations<br>
+      → Permissions → Recevoir des notifications → Autoriser
+    `;
+  }
+  $('pushBlockedModal').classList.add('on');
 }
 
 async function subscribePush() {
