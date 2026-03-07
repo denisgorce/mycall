@@ -38,6 +38,10 @@ input[type=text]::placeholder{color:var(--m)}
 .benter:hover{opacity:.88}
 .benter:active{opacity:.7}
 .benter:disabled{opacity:.4;pointer-events:none}
+.binstall{width:100%;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:8px;transition:all .15s}
+.binstall:hover{border-color:var(--a);color:var(--a)}
+.ios-hint{font-size:10px;color:var(--m);line-height:1.8;margin-top:12px;padding:10px;background:var(--s2);border-radius:8px;border:1px dashed var(--bd)}
+.ios-hint b{color:var(--a)}
 
 /* ── LAYOUT PRINCIPAL ── */
 #app{display:none;height:100dvh;flex-direction:column}
@@ -172,6 +176,10 @@ select option{background:#101820}
     <input type="text" id="uName" placeholder="Marie" maxlength="18"
       autocomplete="given-name" autocorrect="off" autocapitalize="words">
     <button class="benter" id="benter">Entrer →</button>
+    <button class="binstall" id="bInstall" style="display:none">⬇ Installer l’application</button>
+    <div class="ios-hint" id="iosHint" style="display:none">
+      📲 Sur iPhone : Safari → <b>Partager</b> → <b>Sur l’écran d’accueil</b>
+    </div>
   </div>
 </div>
 
@@ -297,6 +305,29 @@ const log = (...a) => console.log('[NEXUS]',...a);
 
 // ── Init ──────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  // PWA install prompt (Android Chrome)
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    $('bInstall').style.display = 'block';
+  });
+  window.addEventListener('appinstalled', () => {
+    $('bInstall').style.display = 'none';
+    deferredPrompt = null;
+  });
+  $('bInstall').onclick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') $('bInstall').style.display = 'none';
+    deferredPrompt = null;
+  };
+  // iOS : expliquer comment faire manuellement
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && !navigator.standalone) {
+    $('iosHint').style.display = 'block';
+  }
+
   $('uName').addEventListener('keydown', e => { if(e.key==='Enter') enter(); });
   $('benter').onclick = enter;
 
