@@ -268,6 +268,7 @@ select option{background:#101820}
   <div class="cvbar">
     <button class="cctrl" id="cvMic"><span class="ic" id="cvMicIc">🎙️</span><span id="cvMicLb">Micro</span></button>
     <button class="cctrl" id="cvCam"><span class="ic" id="cvCamIc">📹</span><span id="cvCamLb">Caméra</span></button>
+    <button class="cctrl" id="cvUpgrade" style="display:none"><span class="ic">📹</span><span>Vidéo</span></button>
     <div class="cvtimer" id="cvTimer">00:00</div>
     <button class="cctrl" id="cvSet"><span class="ic">⚙️</span><span>Appareils</span></button>
     <button class="cctrl end" id="cvEnd"><span class="ic">📵</span><span>Raccrocher</span></button>
@@ -391,7 +392,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // Appel
   $('bAccept').onclick  = acceptCall;
   $('bDecline').onclick = declineCall;
-  $('cvEnd').onclick    = hangup;
+  $('cvEnd').onclick     = hangup;
+  $('cvUpgrade').onclick = upgradeToVideo;
   $('cvMic').onclick    = toggleMic;
   $('cvCam').onclick    = toggleCam;
   $('cvSet').onclick    = openSet;
@@ -495,8 +497,9 @@ function connectWS() {
         showIncomingCall(m.from); break;
 
       case 'call_response':
+        stopRingtone();
         if (m.accepted) startCall(m.from, true);
-        else { toast(m.from + ' a refusé l\'appel'); stopRingtone(); callPeer=null; } break;
+        else { toast(m.from + ' a refusé l\'appel'); callPeer=null; } break;
 
       case 'offer':  await handleOffer(m.from, m.payload);  break;
       case 'answer': await handleAnswer(m.from, m.payload); break;
@@ -642,9 +645,12 @@ function declineCall() {
 // ── Démarrer l'appel ──────────────────────────────────────
 async function startCall(peer, imInitiator) {
   showCo('Connexion à ' + peer + '…');
-  ls = await getMedia(callWithVideo || !imInitiator);
+  const withVideo = callWithVideo || !imInitiator;
+  ls = await getMedia(withVideo);
   hideCo();
   $('callView').classList.add('on');
+  // Montrer le bouton "Passer en vidéo" si appel audio uniquement
+  $('cvUpgrade').style.display = withVideo ? 'none' : 'flex';
   renderLocalTile();
   setupPc(peer);
   if (imInitiator) {
@@ -733,6 +739,7 @@ function cleanupCall() {
   micOn=true; camOn=true;
   $('cvMic').className='cctrl'; $('cvMicIc').textContent='🎙️'; $('cvMicLb').textContent='Micro';
   $('cvCam').className='cctrl'; $('cvCamIc').textContent='📹'; $('cvCamLb').textContent='Caméra';
+  $('cvUpgrade').style.display='none';
 }
 
 // ── Rendu appel ───────────────────────────────────────────
@@ -789,6 +796,38 @@ function toggleCam() {
   $('cvCamLb').textContent=camOn?'Caméra':'Off';
   const lv=document.querySelector('#cv-local video');
   if(lv) lv.style.display=camOn?'block':'none';
+}
+
+// ── Passer en vidéo depuis un appel audio ────────────────
+async function upgradeToVideo() {
+  if (!pc || !callPeer) return;
+  $('cvUpgrade').style.display = 'none';
+  callWithVideo = true;
+  try {
+    // Obtenir la caméra
+    const vs = await navigator.mediaDevices.getUserMedia({
+      video: { width:{ideal:isMob?640:1280}, height:{ideal:isMob?480:720} },
+      audio: false,
+    });
+    const vt = vs.getVideoTracks()[0];
+    ls.addTrack(vt);
+    // Ajouter la piste vidéo à la connexion existante
+    pc.addTrack(vt, ls);
+    // Renégocier
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    relay(callPeer, 'offer', pc.localDescription.toJSON());
+    // Mettre à jour l'affichage local
+    camOn = true;
+    $('cvCam').className = 'cctrl';
+    $('cvCamIc').textContent = '📹';
+    $('cvCamLb').textContent = 'Caméra';
+    renderLocalTile();
+    toast('📹 Vidéo activée');
+  } catch(e) {
+    toast('Impossible d'activer la caméra');
+    $('cvUpgrade').style.display = 'flex';
+  }
 }
 
 // ── Média ─────────────────────────────────────────────────
