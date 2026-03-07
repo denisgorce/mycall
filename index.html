@@ -6,83 +6,47 @@
 <title>NEXUS — Conférence</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
-/* ─────────────────────────────────────────────
-   NEXUS UI  –  sobre, mobile-first, économe
-───────────────────────────────────────────── */
 :root{
-  --bg:#070b0f; --s1:#0c1117; --s2:#101820; --bd:#1a2a38;
-  --a:#00d4ff;  --a2:#7b5fff; --g:#00e87a;  --r:#ff3d5a;
-  --t:#ddeeff;  --m:#3a5568;  --p:rgba(12,17,23,.97);
+  --bg:#070b0f;--s1:#0c1117;--s2:#101820;--bd:#1a2a38;
+  --a:#00d4ff;--a2:#7b5fff;--g:#00e87a;--r:#ff3d5a;
+  --t:#ddeeff;--m:#3a5568;--p:rgba(12,17,23,.97);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--t);height:100dvh;
-  background-image:
-    linear-gradient(rgba(0,212,255,.017) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,212,255,.017) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(0,212,255,.017) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.017) 1px,transparent 1px);
   background-size:48px 48px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ── LOBBY ── */
-#lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  z-index:100;background:var(--bg);padding:16px}
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;
-  padding:clamp(20px,5vw,40px);width:min(420px,100%);position:relative;overflow:hidden}
-.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent)}
-.logo{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-1px;
-  background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;margin-bottom:3px}
-.sub{color:var(--m);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:22px}
-.lbl{font-size:9px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
-.fr{margin-bottom:13px}
-input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;
-  padding:11px 13px;color:var(--t);font-family:'DM Mono',monospace;font-size:13px;
-  outline:none;transition:border-color .15s}
+/* LOBBY */
+#lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:var(--bg);padding:16px}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:clamp(28px,6vw,44px);width:min(340px,100%);position:relative;overflow:hidden;text-align:center}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent)}
+.logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.sub{color:var(--m);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:28px}
+.lbl{font-size:9px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;text-align:left}
+input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:13px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .15s;text-align:center}
 input:focus{border-color:var(--a)}
 input::placeholder{color:var(--m)}
-.rr{display:flex;gap:7px}
-.rr input{flex:1;min-width:0}
-.bgen{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:11px 11px;
-  color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;
-  white-space:nowrap;flex-shrink:0;transition:all .15s}
-.bgen:hover{border-color:var(--a);color:var(--a)}
-.bjoin{width:100%;padding:13px;background:linear-gradient(130deg,var(--a),var(--a2));
-  border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;font-size:13px;
-  font-weight:700;letter-spacing:.8px;cursor:pointer;text-transform:uppercase;margin-top:4px;
-  transition:opacity .15s}
+.bjoin{width:100%;padding:14px;background:linear-gradient(130deg,var(--a),var(--a2));border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:.8px;cursor:pointer;text-transform:uppercase;margin-top:12px;transition:opacity .15s}
 .bjoin:hover{opacity:.88}
+.bjoin:active{opacity:.7}
 .bjoin:disabled{opacity:.4;pointer-events:none}
-.note{font-size:10px;color:var(--m);text-align:center;line-height:1.8;margin-top:14px}
+.note{font-size:10px;color:var(--m);line-height:1.8;margin-top:16px}
 
-/* ── APP ── */
+/* APP */
 #app{display:none;flex-direction:column;height:100dvh;z-index:1}
 #app.on{display:flex}
-
-/* HEADER */
-.hdr{display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:var(--p);border-bottom:1px solid var(--bd);
-  flex-shrink:0;gap:8px}
-.hl{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
-.alogo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;
-  background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;flex-shrink:0}
-.badge{background:var(--s2);border:1px solid var(--bd);border-radius:20px;
-  padding:3px 10px;font-size:10px;color:var(--m);display:flex;align-items:center;
-  gap:4px;min-width:0;flex:1;max-width:190px}
-.badge .rid{color:var(--a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;
-  animation:blink 2.5s ease infinite}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--p);border-bottom:1px solid var(--bd);flex-shrink:0;gap:8px}
+.hl{display:flex;align-items:center;gap:8px}
+.alogo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 2.5s ease infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.22}}
-.cbtn{background:none;border:none;color:var(--m);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0}
-.cbtn:hover{color:var(--a)}
-.pcnt{font-size:10px;color:var(--m);white-space:nowrap;flex-shrink:0}
+.cbtn{background:none;border:1px solid var(--bd);border-radius:6px;color:var(--m);cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;padding:4px 9px;transition:all .15s}
+.cbtn:hover{border-color:var(--a);color:var(--a)}
+.pcnt{font-size:10px;color:var(--m);white-space:nowrap}
 .pcnt b{color:var(--t)}
-
-/* STATUS */
-.sbar{text-align:center;font-size:9px;color:var(--m);padding:4px 14px;
-  background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;
-  letter-spacing:.5px;min-height:24px}
+.sbar{text-align:center;font-size:9px;color:var(--m);padding:4px 14px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;letter-spacing:.5px;min-height:22px}
 
 /* VIDÉO */
 .va{flex:1;padding:10px;overflow-y:auto;display:flex;align-items:center;justify-content:center;min-height:0}
@@ -94,14 +58,10 @@ input::placeholder{color:var(--m)}
 @media(max-width:520px){
   .vg.g2,.vg.g3,.vg.g4{grid-template-columns:1fr}
   .vg.gN{grid-template-columns:1fr 1fr}}
-
-.vt{position:relative;border-radius:10px;overflow:hidden;background:var(--s1);
-  border:1px solid var(--bd);aspect-ratio:4/3}
+.vt{position:relative;border-radius:10px;overflow:hidden;background:var(--s1);border:1px solid var(--bd);aspect-ratio:4/3}
 .vt.me{border-color:rgba(0,212,255,.3)}
 .vt video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
-.tb{position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(0,0,0,.8));
-  padding:18px 10px 7px;display:flex;align-items:center;justify-content:space-between}
+.tb{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:18px 10px 7px;display:flex;align-items:center;justify-content:space-between}
 .tn{font-size:10px;color:#fff;display:flex;align-items:center;gap:4px;min-width:0}
 .tn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ytag{font-size:7px;background:var(--a);color:#000;padding:1px 4px;border-radius:3px;font-weight:700;flex-shrink:0}
@@ -109,7 +69,7 @@ input::placeholder{color:var(--m)}
 .ti{font-size:10px;opacity:.7}
 .ti.x{color:var(--r);opacity:1}
 .av{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--s1)}
-.avc{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#fff}
+.avc{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff}
 .avn{font-size:10px;color:var(--m)}
 .es{display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px 20px;text-align:center;grid-column:1/-1}
 .ei{font-size:36px;opacity:.15}
@@ -152,16 +112,11 @@ select option{background:#101820}
 .tbtn{display:inline-block;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:6px 11px;color:var(--m);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;margin-top:6px;transition:all .15s}
 .tbtn:hover{border-color:var(--a);color:var(--a)}
 
-/* TOAST */
 .toast{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--a);border-radius:7px;padding:7px 14px;font-size:10px;color:var(--a);z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.on{opacity:1}
-
-/* NOTIF */
 .notif{position:fixed;top:56px;right:12px;background:var(--s1);border:1px solid var(--bd);border-left:3px solid var(--g);border-radius:7px;padding:8px 12px;font-size:10px;color:var(--t);z-index:500;max-width:210px;transform:translateX(250px);transition:transform .25s;pointer-events:none}
 .notif.on{transform:translateX(0)}
 .ntit{font-weight:700;color:var(--g);margin-bottom:2px;font-size:9px;letter-spacing:.8px}
-
-/* CONNECTING */
 .co{position:fixed;inset:0;z-index:400;background:rgba(7,11,15,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(3px)}
 .spin{width:30px;height:30px;border-radius:50%;border:2px solid var(--bd);border-top-color:var(--a);animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -170,26 +125,16 @@ select option{background:#101820}
 </head>
 <body>
 
-<!-- LOBBY -->
+<!-- LOBBY : saisir uniquement son prénom -->
 <div id="lobby">
   <div class="card">
     <div class="logo">NEXUS</div>
-    <div class="sub">Conférence temps réel</div>
-    <div class="fr">
-      <div class="lbl">Votre nom</div>
-      <input id="uName" type="text" placeholder="ex: Marie Dupont" maxlength="28"
-        autocomplete="nickname" autocorrect="off" autocapitalize="words">
-    </div>
-    <div class="fr">
-      <div class="lbl">Code de salle</div>
-      <div class="rr">
-        <input id="rCode" type="text" placeholder="ex: nexus-abc12" maxlength="28"
-          autocomplete="off" autocorrect="off" autocapitalize="none">
-        <button class="bgen" id="bgen">🎲 Générer</button>
-      </div>
-    </div>
+    <div class="sub">Conférence</div>
+    <div class="lbl">Votre prénom</div>
+    <input id="uName" type="text" placeholder="Marie" maxlength="20"
+      autocomplete="given-name" autocorrect="off" autocapitalize="words">
     <button class="bjoin" id="bjoin">Rejoindre →</button>
-    <div class="note">Partagez le lien — connexion directe entre appareils.<br>Aucun compte requis.</div>
+    <div class="note">Tous ceux qui ouvrent ce lien<br>vous rejoignent directement.</div>
   </div>
 </div>
 
@@ -198,13 +143,12 @@ select option{background:#101820}
   <div class="hdr">
     <div class="hl">
       <div class="alogo">NEXUS</div>
-      <div class="badge">
-        <div class="dot"></div>
-        <span class="rid" id="hRoom">—</span>
-        <button class="cbtn" id="btnCopy">⎘</button>
-      </div>
+      <div class="dot"></div>
     </div>
-    <div class="pcnt" id="pcnt"><b>1</b> participant</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="cbtn" id="btnCopy">⎘ Inviter</button>
+      <div class="pcnt" id="pcnt"><b>1</b> participant</div>
+    </div>
   </div>
   <div class="sbar" id="sbar"> </div>
   <div class="va"><div class="vg" id="vg"></div></div>
@@ -241,55 +185,46 @@ select option{background:#101820}
 <div class="notif" id="notif"><div class="ntit" id="ntit"></div><div id="nmsg"></div></div>
 
 <script>
-// ════════════════════════════════════════════════════════════════
-//  NEXUS — Client WebRTC
-//  Signaling : WebSocket → votre serveur Render (server.js)
-//  Fonctionne : PC Chrome/Edge/Firefox, Android Chrome, iOS Safari
-// ════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  NEXUS — Lien unique, salle fixe
+//  Ouvrir le lien = rejoindre l'appel. Pas de code de salle.
+// ═══════════════════════════════════════════════════════════
 
-// ▼▼▼  REMPLACEZ PAR L'URL DE VOTRE SERVEUR RENDER  ▼▼▼
 const SIGNAL_SERVER = 'wss://mycall-utj5.onrender.com';
-// ▲▲▲  ex: 'wss://nexus-signal.onrender.com'        ▲▲▲
+const ROOM          = 'nexus-main'; // salle fixe pour tout le monde
 
 const ICE_CFG = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
-  // TURN gratuit OpenRelay — indispensable mobile 4G/5G / NAT symétrique
   { urls: 'turn:openrelay.metered.ca:80',
-    username: 'openrelayproject', credential: 'openrelayproject' },
+    username:'openrelayproject', credential:'openrelayproject' },
   { urls: 'turn:openrelay.metered.ca:443',
-    username: 'openrelayproject', credential: 'openrelayproject' },
+    username:'openrelayproject', credential:'openrelayproject' },
   { urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-    username: 'openrelayproject', credential: 'openrelayproject' },
+    username:'openrelayproject', credential:'openrelayproject' },
 ]};
 
-// ── État ──
 const isMob = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-let myId    = '';
-let myName  = '';
-let room    = '';
-let ws      = null;
-let ls      = null;       // localStream
-let pcs     = {};         // peerId → RTCPeerConnection
-let dchs    = {};         // peerId → RTCDataChannel
-let names   = {};         // peerId → string
-let micOn   = true;
-let camOn   = true;
-let spkId   = '';
-let wsReady = false;
 
-// ── Helpers ──
-const $ = id => document.getElementById(id);
-const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let myId   = '';
+let myName = '';
+let ws     = null;
+let wsOk   = false;
+let ls     = null;
+let pcs    = {};
+let names  = {};
+let micOn  = true;
+let camOn  = true;
+let spkId  = '';
+
+const $   = id => document.getElementById(id);
+const esc = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const log = (...a) => console.log('[NEXUS]', ...a);
 
 // ── Lobby ──
 window.addEventListener('DOMContentLoaded', () => {
-  const p = new URLSearchParams(location.search);
-  if (p.get('room')) $('rCode').value = p.get('room');
-
-  $('bgen').onclick    = genRoom;
+  $('uName').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
   $('bjoin').onclick   = joinRoom;
   $('bMic').onclick    = toggleMic;
   $('bCam').onclick    = toggleCam;
@@ -306,44 +241,28 @@ window.addEventListener('DOMContentLoaded', () => {
   $('sCam').onchange   = changeCam;
 });
 
-function genRoom() {
-  const w = ['nexus','arc','flux','echo','nova','volt','sync','wave','lux','onyx'];
-  $('rCode').value = w[~~(Math.random()*w.length)]+'-'+Math.random().toString(36).slice(2,7);
-}
-
 async function joinRoom() {
   myName = $('uName').value.trim() || 'Anonyme';
-  let rc = $('rCode').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,26);
-  if (!rc) { genRoom(); rc = $('rCode').value; }
-  room = rc;
-
   $('bjoin').disabled = true;
-  const url = new URL(location.href);
-  url.searchParams.set('room', room);
-  history.replaceState({}, '', url);
-
   myId = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
   showCo('Accès à la caméra et au micro…');
   ls = await getMedia();
 
   $('lobby').style.display = 'none';
-  $('hRoom').textContent = room;
   $('app').classList.add('on');
 
   await populateDev();
   renderLocal();
-
-  showCo('Connexion au serveur de signaling…');
+  showCo('Connexion…');
   connectWS();
 }
 
 async function getMedia() {
   const tries = [
-    { video:{ width:{ideal:isMob?640:1280}, height:{ideal:isMob?480:720} },
-      audio:{ echoCancellation:true, noiseSuppression:true } },
-    { video: true, audio: true },
-    { video: false, audio: true },
+    { video:{ width:{ideal:isMob?640:1280}, height:{ideal:isMob?480:720} }, audio:{ echoCancellation:true, noiseSuppression:true } },
+    { video:true, audio:true },
+    { video:false, audio:true },
   ];
   for (const c of tries) {
     try { return await navigator.mediaDevices.getUserMedia(c); } catch(e) {}
@@ -352,129 +271,85 @@ async function getMedia() {
   return new MediaStream();
 }
 
-// ── WebSocket signaling ──
+// ── WebSocket ──
 function connectWS() {
-  const url = SIGNAL_SERVER === 'wss://VOTRE-APP.onrender.com'
-    ? null : SIGNAL_SERVER;
-
-  if (!url) {
-    hideCo();
-    setBar('⚠️  Configurez SIGNAL_SERVER dans index.html (voir README)', true);
-    return;
-  }
-
-  try { ws = new WebSocket(url); }
-  catch(e) { hideCo(); setBar('❌ Impossible de se connecter au serveur'); return; }
+  try { ws = new WebSocket(SIGNAL_SERVER); }
+  catch(e) { hideCo(); setBar('❌ Serveur inaccessible'); return; }
 
   ws.onopen = () => {
-    wsReady = true;
-    log('WS connected');
-    send({ type:'join', id:myId, room, name:myName });
+    wsOk = true;
+    log('WS open');
+    send({ type:'join', id:myId, room:ROOM, name:myName });
     hideCo();
-    setBar('Connecté · en attente de participants…');
+    setBar('En attente de participants…');
   };
 
-  ws.onmessage = async (ev) => {
-    let msg;
-    try { msg = JSON.parse(ev.data); } catch { return; }
-    log('WS ←', msg.type, msg.from||'');
+  ws.onmessage = async ev => {
+    let m; try { m = JSON.parse(ev.data); } catch { return; }
+    log('←', m.type, m.from || m.id || '');
 
-    switch (msg.type) {
-      // Liste des pairs déjà présents → on initie un appel vers chacun
+    switch (m.type) {
       case 'peers':
-        for (const pid of msg.peers) {
-          if (pid !== myId) await callPeer(pid);
+        // Pairs déjà présents — on les appelle tous
+        for (const pid of m.peers) {
+          if (pid !== myId && !pcs[pid]) await callPeer(pid);
         }
+        if (m.peers.length) setBar('');
         break;
 
-      // Nouveau pair qui vient d'arriver → on lui envoie une offre
       case 'peer_joined':
-        log('Peer joined:', msg.id);
-        if (!pcs[msg.id]) await callPeer(msg.id);
+        // Nouveau pair — on l'appelle
+        if (m.id !== myId && !pcs[m.id]) await callPeer(m.id);
         break;
 
-      // Offre WebRTC reçue
-      case 'offer':
-        await handleOffer(msg.from, msg.payload);
-        break;
-
-      // Réponse WebRTC reçue
-      case 'answer':
-        await handleAnswer(msg.from, msg.payload);
-        break;
-
-      // Candidat ICE reçu
-      case 'ice':
-        await handleIce(msg.from, msg.payload);
-        break;
-
-      // Un pair a quitté
-      case 'peer_left':
-        removePeer(msg.id);
-        break;
+      case 'offer':  await handleOffer(m.from, m.payload);  break;
+      case 'answer': await handleAnswer(m.from, m.payload); break;
+      case 'ice':    await handleIce(m.from, m.payload);    break;
+      case 'peer_left': removePeer(m.id); break;
     }
   };
 
   ws.onclose = () => {
-    wsReady = false;
-    log('WS closed, reconnecting in 3s…');
+    wsOk = false;
+    log('WS closed, retry 3s');
     setBar('Reconnexion…');
     setTimeout(connectWS, 3000);
   };
 
-  ws.onerror = () => { ws.close(); };
+  ws.onerror = () => ws.close();
 }
 
-function send(obj) {
-  if (ws && wsReady) ws.send(JSON.stringify(obj));
-}
-
-function relay(toPeer, relayType, payload) {
-  send({ type:'relay', to:toPeer, relay_type:relayType, payload });
-}
+function send(obj) { if (ws && wsOk) ws.send(JSON.stringify(obj)); }
+function relay(to, rtype, payload) { send({ type:'relay', to, relay_type:rtype, payload }); }
 
 // ── WebRTC ──
 function makePc(pid) {
-  // Ne pas écraser une connexion déjà établie ou en cours
-  if (pcs[pid] && ['connected','connecting'].includes(pcs[pid].connectionState)) {
-    return pcs[pid];
-  }
+  if (pcs[pid] && ['connected','connecting'].includes(pcs[pid].connectionState)) return pcs[pid];
   if (pcs[pid]) pcs[pid].close();
+
   const pc = new RTCPeerConnection(ICE_CFG);
   pcs[pid] = pc;
 
-  // Ajouter nos tracks locaux
   ls.getTracks().forEach(t => pc.addTrack(t, ls));
 
-  // Envoyer les candidats ICE
-  pc.onicecandidate = e => {
-    if (e.candidate) relay(pid, 'ice', e.candidate.toJSON());
-  };
+  pc.onicecandidate = e => { if (e.candidate) relay(pid, 'ice', e.candidate.toJSON()); };
 
-  // Recevoir le flux distant
   pc.ontrack = e => {
-    const stream = e.streams[0];
-    if (!stream) return;
+    const stream = e.streams[0]; if (!stream) return;
     if (pc._stream === stream) return;
     pc._stream = stream;
     renderRemote(pid, stream, names[pid] || 'Participant');
     updateCount();
-    notif('→ Connecté', (names[pid]||'Participant') + ' a rejoint la salle');
+    notif('→ Connecté', (names[pid]||'Participant') + ' a rejoint');
     setBar('');
   };
 
   pc.onconnectionstatechange = () => {
     log('PC', pid, pc.connectionState);
-    if (['disconnected','failed','closed'].includes(pc.connectionState)) {
-      removePeer(pid);
-    }
+    if (['disconnected','failed','closed'].includes(pc.connectionState)) removePeer(pid);
   };
 
-  // DataChannel pour échanger les noms
-  pc.ondatachannel = e => {
-    setupDC(e.channel, pid);
-  };
-
+  pc.ondatachannel = e => setupDC(e.channel, pid);
   return pc;
 }
 
@@ -482,31 +357,24 @@ async function callPeer(pid) {
   const pc = makePc(pid);
   const dc = pc.createDataChannel('meta');
   setupDC(dc, pid);
-
   const offer = await pc.createOffer({ offerToReceiveAudio:true, offerToReceiveVideo:true });
   await pc.setLocalDescription(offer);
   relay(pid, 'offer', pc.localDescription.toJSON());
 }
 
 async function handleOffer(from, sdp) {
-  // Glare (collision) : on a peut-être déjà envoyé une offre à ce pair.
-  // Tie-break : le pair avec le plus petit ID cède (rollback) et accepte l'offre adverse.
-  const existing = pcs[from];
-  if (existing && existing.signalingState === 'have-local-offer') {
+  const ex = pcs[from];
+  // Gestion collision : tie-break par ID
+  if (ex && ex.signalingState === 'have-local-offer') {
     if (myId < from) {
-      // On est "poli" : on abandonne notre offre et on accepte la sienne
-      log('Glare: rolling back, accepting offer from', from);
-      await existing.setLocalDescription({ type: 'rollback' }).catch(() => {});
+      await ex.setLocalDescription({ type:'rollback' }).catch(()=>{});
     } else {
-      // On est "impoli" : on ignore son offre, il va recevoir notre réponse
-      log('Glare: ignoring offer from', from, '(we are impolite)');
-      return;
+      return; // on ignore, notre offre prime
     }
   }
-
-  const pc = existing || makePc(from);
+  const pc = (ex && ex.signalingState !== 'closed') ? ex : makePc(from);
   await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  await flushIceBuf(from, pc);
+  await flushIce(from, pc);
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
   relay(from, 'answer', pc.localDescription.toJSON());
@@ -515,30 +383,26 @@ async function handleOffer(from, sdp) {
 async function handleAnswer(from, sdp) {
   const pc = pcs[from];
   if (!pc || pc.signalingState !== 'have-local-offer') return;
-  await pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(e => log('answer err', e));
-  await flushIceBuf(from, pc);
+  await pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(e => log('ans err', e));
+  await flushIce(from, pc);
 }
 
-async function handleIce(from, candidate) {
-  const pc = pcs[from];
-  if (!pc) return;
+async function handleIce(from, cand) {
+  const pc = pcs[from]; if (!pc) return;
   if (!pc.remoteDescription) {
     pc._iceBuf = pc._iceBuf || [];
-    pc._iceBuf.push(candidate);
+    pc._iceBuf.push(cand);
     return;
   }
-  await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
+  await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
 }
 
-async function flushIceBuf(pid, pc) {
-  for (const c of (pc._iceBuf || [])) {
-    await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
-  }
+async function flushIce(pid, pc) {
+  for (const c of (pc._iceBuf||[])) await pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
   pc._iceBuf = [];
 }
 
 function setupDC(dc, pid) {
-  dchs[pid] = dc;
   dc.onopen = () => dc.send(JSON.stringify({ type:'hello', name:myName }));
   dc.onmessage = e => {
     try {
@@ -556,13 +420,10 @@ function removePeer(pid) {
   if (!pcs[pid] && !names[pid]) return;
   const name = names[pid] || 'Participant';
   pcs[pid]?.close();
-  delete pcs[pid];
-  delete dchs[pid];
-  delete names[pid];
+  delete pcs[pid]; delete names[pid];
   document.getElementById('t-'+pid)?.remove();
-  updateGrid();
-  updateCount();
-  notif('⬅ Parti', name + ' a quitté');
+  updateGrid(); updateCount();
+  notif('⬅ Parti', name + ' a quitté', true);
 }
 
 // ── Rendu vidéo ──
@@ -588,14 +449,11 @@ function renderRemote(pid, stream, name) {
   let t = document.getElementById('t-'+pid);
   if (!t) { t = mkTile(pid, false); $('vg').appendChild(t); }
   else t.innerHTML = '<div class="tb"></div>';
-
   const v = mkVid(stream, false);
   t.insertBefore(v, t.querySelector('.tb'));
   t.querySelector('.tb').innerHTML = `<div class="tn"><span>${esc(name)}</span></div>`;
   applySpk(v);
   updateGrid();
-
-  // iOS : la lecture auto est bloquée sans geste → bouton de déblocage
   v.play().catch(() => {
     const b = document.createElement('button');
     b.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:rgba(0,212,255,.12);border:none;color:var(--a);font-size:13px;cursor:pointer;z-index:5';
@@ -607,7 +465,7 @@ function renderRemote(pid, stream, name) {
 
 function mkTile(id, me) {
   const t = document.createElement('div');
-  t.className = 'vt' + (me?' me':''); t.id = 't-'+id;
+  t.className = 'vt'+(me?' me':''); t.id = 't-'+id;
   const tb = document.createElement('div'); tb.className = 'tb';
   t.appendChild(tb); return t;
 }
@@ -622,24 +480,23 @@ function mkAv(name) {
 }
 
 function updateGrid() {
-  const g = $('vg'), n = g.querySelectorAll('.vt').length;
-  g.className = 'vg';
-  if (n===2) g.classList.add('g2');
-  else if (n===3) g.classList.add('g3');
-  else if (n===4) g.classList.add('g4');
-  else if (n>4) g.classList.add('gN');
-
+  const g=$('vg'), n=g.querySelectorAll('.vt').length;
+  g.className='vg';
+  if(n===2)g.classList.add('g2');
+  else if(n===3)g.classList.add('g3');
+  else if(n===4)g.classList.add('g4');
+  else if(n>4)g.classList.add('gN');
   const hasRemote = !!g.querySelector('.vt:not(.me)');
-  const em = $('es');
-  if (!hasRemote && !em) {
-    const e = document.createElement('div'); e.id='es'; e.className='es';
+  const em=$('es');
+  if(!hasRemote && !em){
+    const e=document.createElement('div'); e.id='es'; e.className='es';
     e.innerHTML=`<div class="ei">🔗</div>
-      <div class="et">En attente de participants</div>
+      <div class="et">Vous êtes seul pour l'instant</div>
       <div class="ep">Partagez ce lien pour inviter quelqu'un</div>
       <div class="eurl" id="eurl">${esc(location.href)}</div>`;
     e.querySelector('#eurl').onclick = copyLink;
     g.appendChild(e);
-  } else if (hasRemote && em) em.remove();
+  } else if(hasRemote && em) em.remove();
 }
 
 function updateCount() {
@@ -649,72 +506,66 @@ function updateCount() {
 
 // ── Contrôles ──
 function toggleMic() {
-  micOn = !micOn;
-  ls.getAudioTracks().forEach(t => t.enabled = micOn);
-  $('bMic').className = 'ctrl'+(micOn?'':' off');
-  $('micIc').textContent = micOn?'🎙️':'🔇';
-  $('micLb').textContent = micOn?'Micro':'Muet';
-  const ic=$('lMic'); if(ic){ ic.textContent=micOn?'🎙️':'🔇'; ic.className='ti'+(micOn?'':' x'); }
+  micOn=!micOn;
+  ls.getAudioTracks().forEach(t=>t.enabled=micOn);
+  $('bMic').className='ctrl'+(micOn?'':' off');
+  $('micIc').textContent=micOn?'🎙️':'🔇';
+  $('micLb').textContent=micOn?'Micro':'Muet';
+  const ic=$('lMic'); if(ic){ic.textContent=micOn?'🎙️':'🔇';ic.className='ti'+(micOn?'':' x');}
 }
 
 function toggleCam() {
-  camOn = !camOn;
-  ls.getVideoTracks().forEach(t => t.enabled = camOn);
-  $('bCam').className = 'ctrl'+(camOn?'':' off');
-  $('camIc').textContent = camOn?'📹':'📷';
-  $('camLb').textContent = camOn?'Caméra':'Off';
-  const ic=$('lCam'); if(ic){ ic.textContent=camOn?'📹':'📷'; ic.className='ti'+(camOn?'':' x'); }
+  camOn=!camOn;
+  ls.getVideoTracks().forEach(t=>t.enabled=camOn);
+  $('bCam').className='ctrl'+(camOn?'':' off');
+  $('camIc').textContent=camOn?'📹':'📷';
+  $('camLb').textContent=camOn?'Caméra':'Off';
+  const ic=$('lCam'); if(ic){ic.textContent=camOn?'📹':'📷';ic.className='ti'+(camOn?'':' x');}
   const tile=document.getElementById('t-local');
-  if (tile) {
+  if(tile){
     const v=tile.querySelector('video'), a=tile.querySelector('.av');
-    if (camOn) { a?.remove(); v&&(v.style.display='block'); }
-    else { v&&(v.style.display='none'); if(!a) tile.insertBefore(mkAv(myName), tile.querySelector('.tb')); }
+    if(camOn){a?.remove();v&&(v.style.display='block');}
+    else{v&&(v.style.display='none');if(!a)tile.insertBefore(mkAv(myName),tile.querySelector('.tb'));}
   }
 }
 
 function leave() {
-  send({ type:'leave' });
-  Object.values(pcs).forEach(pc => pc.close());
+  send({type:'leave'});
+  Object.values(pcs).forEach(pc=>pc.close());
   ws?.close();
-  ls?.getTracks().forEach(t => t.stop());
-  location.href = location.pathname;
+  ls?.getTracks().forEach(t=>t.stop());
+  location.reload();
 }
 
 // ── Audio output ──
 function applySpk(v) {
-  if (spkId && typeof v.setSinkId === 'function') v.setSinkId(spkId).catch(()=>{});
+  if(spkId && typeof v.setSinkId==='function') v.setSinkId(spkId).catch(()=>{});
 }
-
 function setAudio(mode) {
-  $('bSpk').className = 'sb'+(mode==='speaker'?' on':'');
-  $('bEar').className = 'sb'+(mode==='earpiece'?' on':'');
+  $('bSpk').className='sb'+(mode==='speaker'?' on':'');
+  $('bEar').className='sb'+(mode==='earpiece'?' on':'');
   toast(mode==='speaker'?'🔊 Haut-parleur':'📱 Oreillette');
 }
 
 // ── Appareils ──
 async function populateDev() {
   try {
-    const devs = await navigator.mediaDevices.enumerateDevices();
-    const mics = devs.filter(d=>d.kind==='audioinput');
-    const spks = devs.filter(d=>d.kind==='audiooutput');
-    const cams = devs.filter(d=>d.kind==='videoinput');
-    const note = $('spkNote');
-    const sinkOk = typeof document.createElement('video').setSinkId==='function';
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    const mics=devs.filter(d=>d.kind==='audioinput');
+    const spks=devs.filter(d=>d.kind==='audiooutput');
+    const cams=devs.filter(d=>d.kind==='videoinput');
+    const note=$('spkNote');
+    const sinkOk=typeof document.createElement('video').setSinkId==='function';
 
-    $('sMic').innerHTML = mics.length
-      ? mics.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Micro '+(i+1))}</option>`).join('')
-      : '<option value="">Micro par défaut</option>';
+    $('sMic').innerHTML=mics.length?mics.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Micro '+(i+1))}</option>`).join(''):'<option value="">Micro par défaut</option>';
+    $('sCam').innerHTML=cams.length?cams.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Caméra '+(i+1))}</option>`).join(''):'<option value="">Caméra par défaut</option>';
 
-    $('sCam').innerHTML = cams.length
-      ? cams.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Caméra '+(i+1))}</option>`).join('')
-      : '<option value="">Caméra par défaut</option>';
-
-    if (isIOS) {
+    if(isIOS){
       $('sSpk').innerHTML='<option>Géré par iOS</option>'; $('sSpk').disabled=true;
       note.style.display='block';
       note.textContent='Sur iPhone/iPad, utilisez les boutons ci-dessous ou branchez des écouteurs.';
       $('iosBtns').style.display='flex';
-    } else if (sinkOk && spks.length) {
+    } else if(sinkOk && spks.length){
       $('sSpk').disabled=false;
       $('sSpk').innerHTML=spks.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Haut-parleur '+(i+1))}</option>`).join('');
       note.style.display='none';
@@ -725,80 +576,68 @@ async function populateDev() {
       note.textContent='La sélection du haut-parleur est disponible sur Chrome et Edge uniquement.';
     }
 
-    if (ls) {
+    if(ls){
       const at=ls.getAudioTracks()[0];
-      if(at){ const s=at.getSettings(); if(s.deviceId) $('sMic').value=s.deviceId; }
+      if(at){const s=at.getSettings();if(s.deviceId)$('sMic').value=s.deviceId;}
       const vt=ls.getVideoTracks()[0];
-      if(vt){ const s=vt.getSettings(); if(s.deviceId) $('sCam').value=s.deviceId; }
+      if(vt){const s=vt.getSettings();if(s.deviceId)$('sCam').value=s.deviceId;}
     }
-  } catch(e) { log('populateDev err',e); }
+  } catch(e){log('dev err',e);}
 }
 
 async function changeMic() {
-  const id = $('sMic').value;
-  try {
-    const ns = await navigator.mediaDevices.getUserMedia({
-      audio: id ? {deviceId:{exact:id},echoCancellation:true,noiseSuppression:true} : true,
-      video: false
-    });
-    const nt = ns.getAudioTracks()[0];
-    ls.getAudioTracks().forEach(t=>{ ls.removeTrack(t); t.stop(); });
+  const id=$('sMic').value;
+  try{
+    const ns=await navigator.mediaDevices.getUserMedia({audio:id?{deviceId:{exact:id},echoCancellation:true,noiseSuppression:true}:true,video:false});
+    const nt=ns.getAudioTracks()[0];
+    ls.getAudioTracks().forEach(t=>{ls.removeTrack(t);t.stop();});
     ls.addTrack(nt); nt.enabled=micOn;
-    Object.values(pcs).forEach(pc=>{
-      pc.getSenders().find(s=>s.track?.kind==='audio')?.replaceTrack(nt);
-    });
+    Object.values(pcs).forEach(pc=>pc.getSenders().find(s=>s.track?.kind==='audio')?.replaceTrack(nt));
     toast('Microphone changé ✓');
-  } catch(e) { toast('Erreur: '+e.message); }
+  }catch(e){toast('Erreur: '+e.message);}
 }
 
 function changeSpk() {
-  spkId = $('sSpk').value;
+  spkId=$('sSpk').value;
   document.querySelectorAll('.vt:not(.me) video').forEach(applySpk);
   toast('Sortie audio changée ✓');
 }
 
 async function changeCam() {
-  const id = $('sCam').value;
-  try {
-    const ns = await navigator.mediaDevices.getUserMedia({
-      video: id ? {deviceId:{exact:id}} : true, audio:false
-    });
-    const nt = ns.getVideoTracks()[0];
-    ls.getVideoTracks().forEach(t=>{ ls.removeTrack(t); t.stop(); });
+  const id=$('sCam').value;
+  try{
+    const ns=await navigator.mediaDevices.getUserMedia({video:id?{deviceId:{exact:id}}:true,audio:false});
+    const nt=ns.getVideoTracks()[0];
+    ls.getVideoTracks().forEach(t=>{ls.removeTrack(t);t.stop();});
     ls.addTrack(nt); nt.enabled=camOn;
     const lv=document.querySelector('#t-local video');
-    if(lv) lv.srcObject=ls;
-    Object.values(pcs).forEach(pc=>{
-      pc.getSenders().find(s=>s.track?.kind==='video')?.replaceTrack(nt);
-    });
+    if(lv)lv.srcObject=ls;
+    Object.values(pcs).forEach(pc=>pc.getSenders().find(s=>s.track?.kind==='video')?.replaceTrack(nt));
     toast('Caméra changée ✓');
-  } catch(e) { toast('Erreur: '+e.message); }
+  }catch(e){toast('Erreur: '+e.message);}
 }
 
 function testSpk() {
-  try {
+  try{
     const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator(), g=ctx.createGain();
+    const o=ctx.createOscillator(),g=ctx.createGain();
     o.frequency.value=440; g.gain.setValueAtTime(.2,ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(); o.stop(ctx.currentTime+.5);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.5);
     toast('🔊 Bip test');
-  } catch(e) { toast('Non supporté'); }
+  }catch(e){toast('Non supporté');}
 }
 
-// ── Settings ──
-function openSet() { populateDev(); $('sp').classList.add('on'); $('olay').classList.add('on'); }
-function closeSet() { $('sp').classList.remove('on'); $('olay').classList.remove('on'); }
+function openSet(){populateDev();$('sp').classList.add('on');$('olay').classList.add('on');}
+function closeSet(){$('sp').classList.remove('on');$('olay').classList.remove('on');}
 
-// ── Utils ──
 function copyLink() {
   const url = location.href;
-  if (navigator.share && isMob) {
-    navigator.share({ title:'NEXUS', url }).catch(()=>doCopy(url));
+  if(navigator.share && isMob){
+    navigator.share({title:'NEXUS — Rejoignez l\'appel', url}).catch(()=>doCopy(url));
   } else doCopy(url);
 }
-function doCopy(url) {
+function doCopy(url){
   navigator.clipboard?.writeText(url).then(()=>toast('Lien copié ✓')).catch(()=>{
     const ta=document.createElement('textarea');
     ta.value=url; document.body.appendChild(ta); ta.select();
@@ -807,14 +646,11 @@ function doCopy(url) {
 }
 
 let toastT;
-function toast(msg) {
-  const el=$('toast'); el.textContent=msg; el.classList.add('on');
-  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),2800);
-}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2800);}
 
 let notifT;
-function notif(title, msg, leave=false) {
-  const n=$('notif'), nt=$('ntit');
+function notif(title,msg,leave=false){
+  const n=$('notif'),nt=$('ntit');
   $('nmsg').textContent=msg; nt.textContent=title;
   n.style.borderLeftColor=leave?'var(--r)':'var(--g)';
   nt.style.color=leave?'var(--r)':'var(--g)';
@@ -822,25 +658,12 @@ function notif(title, msg, leave=false) {
   notifT=setTimeout(()=>n.classList.remove('on'),4000);
 }
 
-function setBar(msg, warn=false) {
-  const b=$('sbar');
-  b.textContent=msg||' ';
-  b.style.color=warn?'var(--r)':'var(--m)';
-}
+function setBar(msg,warn=false){const b=$('sbar');b.textContent=msg||' ';b.style.color=warn?'var(--r)':'var(--m)';}
+function showCo(msg){let el=$('co');if(!el){el=document.createElement('div');el.id='co';el.className='co';el.innerHTML='<div class="spin"></div><div class="ctx" id="coTxt"></div>';document.body.appendChild(el);}$('coTxt').textContent=msg;}
+function hideCo(){$('co')?.remove();}
 
-function showCo(msg) {
-  let el=$('co');
-  if(!el){
-    el=document.createElement('div'); el.id='co'; el.className='co';
-    el.innerHTML='<div class="spin"></div><div class="ctx" id="coTxt"></div>';
-    document.body.appendChild(el);
-  }
-  $('coTxt').textContent=msg;
-}
-function hideCo() { $('co')?.remove(); }
-
-window.addEventListener('beforeunload', () => {
-  send({ type:'leave' });
+window.addEventListener('beforeunload',()=>{
+  send({type:'leave'});
   Object.values(pcs).forEach(pc=>pc.close());
   ls?.getTracks().forEach(t=>t.stop());
 });
