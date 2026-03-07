@@ -1,108 +1,122 @@
 // ═══════════════════════════════════════════════════════════
-//  NEXUS — Serveur de signaling WebSocket
-//  Déploiement gratuit sur Render.com (voir README ci-dessous)
-//  Node.js pur, zéro dépendance externe sauf "ws"
+//  NEXUS — Serveur signaling + Push notifications
+//  Dépendances : ws, web-push
 // ═══════════════════════════════════════════════════════════
 //
-//  DÉPLOIEMENT RENDER.COM (gratuit, ~2 minutes) :
-//  1. Créez un compte sur render.com
-//  2. New → Web Service → "Deploy from a public Git repo"
-//  3. Créez un repo GitHub avec ce server.js et package.json
-//  4. Build Command : npm install
-//     Start Command : node server.js
-//  5. Vous obtenez une URL wss://votre-app.onrender.com
-//  6. Collez cette URL dans index.html (variable SIGNAL_SERVER)
+//  Variables d'env à configurer sur Render.com :
+//    VAPID_PUBLIC_KEY   (déjà dans le code, peut rester)
+//    VAPID_PRIVATE_KEY  (mettre dans Render env vars — SECRET)
+//    VAPID_EMAIL        ex: mailto:vous@gmail.com
 //
 // ═══════════════════════════════════════════════════════════
 
 const { WebSocketServer } = require('ws');
-const http = require('http');
+const http    = require('http');
+const webpush = require('web-push');
+
+const VAPID_PUBLIC_KEY  = process.env.VAPID_PUBLIC_KEY  || 'BPD4U8JbtKKc0DPpz8zj4y2I-pf6DMNt8wZ1gjRsAJwGeRSFGMMDH7ynZkmaz7aBvZ7utdtWDnhKhj0T6KvKKGU';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'pv1sorrQvGasxr3gHs7ORmdFKMzpyM62NGEby28eVhA';
+const VAPID_EMAIL       = process.env.VAPID_EMAIL       || 'mailto:nexus@example.com';
+
+webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 const PORT = process.env.PORT || 3000;
-
-// Serveur HTTP minimal (requis par Render pour health check)
 const httpServer = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('NEXUS Signaling Server OK');
+  if (req.url === '/vapid-public-key') {
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+    return res.end(VAPID_PUBLIC_KEY);
+  }
+  res.writeHead(200); res.end('NEXUS OK');
 });
+
+// members[name] = { ws, pushSub, name, id }
+const members = new Map();
+const log = (...a) => console.log(new Date().toISOString().slice(11,19), ...a);
 
 const wss = new WebSocketServer({ server: httpServer });
 
-// rooms[roomId] = Map<peerId, WebSocket>
-const rooms = new Map();
-
-function log(...args) {
-  console.log(new Date().toISOString().slice(11, 19), ...args);
-}
-
 wss.on('connection', (ws) => {
-  let myRoom = null;
-  let myId   = null;
+  let myName = null, myId = null;
 
   ws.on('message', (raw) => {
-    let msg;
-    try { msg = JSON.parse(raw); } catch { return; }
+    let msg; try { msg = JSON.parse(raw); } catch { return; }
 
-    // ── JOIN : un pair rejoint une salle ──
-    if (msg.type === 'join') {
-      myId   = msg.id;
-      myRoom = msg.room;
-      if (!myId || !myRoom) return;
-
-      if (!rooms.has(myRoom)) rooms.set(myRoom, new Map());
-      const room = rooms.get(myRoom);
-
-      // Envoyer la liste des pairs déjà présents
-      const peers = [];
-      room.forEach((_, pid) => peers.push(pid));
-      ws.send(JSON.stringify({ type: 'peers', peers }));
-
-      // Informer les autres de notre arrivée
-      room.forEach((sock) => {
-        if (sock.readyState === 1) {
-          sock.send(JSON.stringify({ type: 'peer_joined', id: myId }));
-        }
-      });
-
-      room.set(myId, ws);
-      log(`JOIN  room=${myRoom} id=${myId} peers=${peers.length}`);
+    if (msg.type === 'register') {
+      myName = msg.name; myId = msg.id;
+      if (!myName || !myId) return;
+      members.set(myName, { ws, pushSub: null, name: myName, id: myId });
+      const list = [];
+      members.forEach((m, n) => { if (n !== myName) list.push({ name: m.name, id: m.id }); });
+      ws.send(JSON.stringify({ type: 'members', members: list }));
+      broadcast(myName, { type: 'member_joined', name: myName, id: myId });
+      log(`JOIN name=${myName} total=${members.size}`);
       return;
     }
 
-    // ── RELAY : transmettre offer/answer/ice à un pair précis ──
-    if (msg.type === 'relay' && myRoom) {
-      const room = rooms.get(myRoom);
-      if (!room) return;
-      const target = room.get(msg.to);
-      if (target && target.readyState === 1) {
-        target.send(JSON.stringify({
-          type:    msg.relay_type,   // 'offer' | 'answer' | 'ice'
-          from:    myId,
-          payload: msg.payload,
-        }));
+    if (msg.type === 'push_subscribe' && myName) {
+      const m = members.get(myName);
+      if (m) m.pushSub = msg.subscription;
+      log(`PUSH_SUB name=${myName}`);
+      return;
+    }
+
+    if (msg.type === 'call_request' && myName) {
+      const target = members.get(msg.to);
+      if (!target) return;
+      if (target.ws.readyState === 1) {
+        target.ws.send(JSON.stringify({ type:'incoming_call', from:myName, fromId:myId }));
       }
+      if (target.pushSub) {
+        webpush.sendNotification(target.pushSub, JSON.stringify({
+          title: `📞 Appel de ${myName}`,
+          body:  'Appuyez pour répondre',
+          data:  { caller: myName, callerId: myId },
+        })).catch(err => {
+          log(`PUSH_ERR ${err.statusCode}`);
+          if (err.statusCode === 410) { const m = members.get(msg.to); if (m) m.pushSub = null; }
+        });
+      }
+      return;
+    }
+
+    if (msg.type === 'call_response' && myName) {
+      sendTo(msg.to, { type:'call_response', from:myName, fromId:myId, accepted:msg.accepted });
+      return;
+    }
+
+    if (msg.type === 'relay' && myName) {
+      sendTo(msg.to, { type:msg.relay_type, from:myName, fromId:myId, payload:msg.payload });
+      return;
+    }
+
+    if (msg.type === 'hangup' && myName) {
+      sendTo(msg.to, { type:'hangup', from:myName });
+      return;
+    }
+
+    if (msg.type === 'chat' && myName) {
+      broadcast(null, { type:'chat', from:myName, text:msg.text, ts:Date.now() });
       return;
     }
   });
 
   ws.on('close', () => {
-    if (!myRoom || !myId) return;
-    const room = rooms.get(myRoom);
-    if (!room) return;
-    room.delete(myId);
-    // Prévenir les autres
-    room.forEach((sock) => {
-      if (sock.readyState === 1) {
-        sock.send(JSON.stringify({ type: 'peer_left', id: myId }));
-      }
-    });
-    if (room.size === 0) rooms.delete(myRoom);
-    log(`LEAVE room=${myRoom} id=${myId}`);
+    if (!myName) return;
+    members.delete(myName);
+    broadcast(myName, { type:'member_left', name:myName });
+    log(`LEAVE name=${myName} total=${members.size}`);
   });
 
   ws.on('error', () => {});
 });
 
-httpServer.listen(PORT, () => {
-  log(`Signaling server listening on port ${PORT}`);
-});
+function sendTo(name, msg) {
+  const m = members.get(name);
+  if (m && m.ws.readyState === 1) m.ws.send(JSON.stringify(msg));
+}
+function broadcast(excludeName, msg) {
+  const raw = JSON.stringify(msg);
+  members.forEach((m, n) => { if (n !== excludeName && m.ws.readyState === 1) m.ws.send(raw); });
+}
+
+httpServer.listen(PORT, () => log(`Listening on ${PORT}`));
