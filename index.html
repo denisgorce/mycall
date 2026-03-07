@@ -374,19 +374,26 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const log = (...a) => console.log('[NEXUS]',...a);
 
+// Capturer l'événement PWA dès que possible (avant DOMContentLoaded)
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Afficher le bouton si le DOM est prêt, sinon il sera affiché dans DOMContentLoaded
+  const btn = document.getElementById('bInstall');
+  if (btn) btn.style.display = 'block';
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const btn = document.getElementById('bInstall');
+  if (btn) btn.style.display = 'none';
+});
+
 // ── Init ──────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  // PWA install prompt (Android Chrome)
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    $('bInstall').style.display = 'block';
-  });
-  window.addEventListener('appinstalled', () => {
-    $('bInstall').style.display = 'none';
-    deferredPrompt = null;
-  });
+  // PWA install prompt
+  // Si beforeinstallprompt a déjà été capturé, afficher le bouton
+  if (deferredPrompt) $('bInstall').style.display = 'block';
   $('bInstall').onclick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -442,15 +449,22 @@ window.addEventListener('DOMContentLoaded', () => {
   // share URL shown in push banner area
 
   // Auto-login si nom mémorisé
+  // On attend 900ms pour laisser beforeinstallprompt se déclencher d'abord
   const savedName = localStorage.getItem('nexus_name');
   if (savedName) {
     myName = savedName;
-    // Highlight le bouton correspondant
     document.querySelectorAll('.nbtn').forEach(b => {
       if (b.textContent === savedName) b.classList.add('active');
     });
-    // Auto-enter après un court délai pour laisser le DOM se stabiliser
-    setTimeout(() => _doEnter(), 100);
+    setTimeout(() => {
+      // Si l'install prompt est disponible, rester sur le lobby 3s pour le montrer
+      if (deferredPrompt) {
+        $('bInstall').style.display = 'block';
+        setTimeout(() => _doEnter(), 3000);
+      } else {
+        _doEnter();
+      }
+    }, 800);
   }
 
   // PWA install SW
@@ -555,12 +569,13 @@ function relay(to, rtype, payload) { send({type:'relay', to, relay_type:rtype, p
 // ── Membres ───────────────────────────────────────────────
 function renderMembers() {
   const list = $('memberList');
+  const fixedContacts = ['Denis','Eugenia','Maryse','André'];
   const rows = CONTACTS
     .filter(n => n !== myName)
     .map(n => {
       const online = !!members[n];
       const initials = n.charAt(0).toUpperCase();
-      const isFixed = ['Denis','Eugenia','Maryse','André'].includes(n);
+      const isFixed = fixedContacts.includes(n);
       return `<div class="member">
         <div class="mavt">${esc(initials)}</div>
         <div class="minfo">
@@ -568,15 +583,27 @@ function renderMembers() {
           <div class="mstatus ${online ? 'online' : 'offline'}">${online ? 'En ligne' : 'Hors ligne'}</div>
         </div>
         <div class="mactions">
-          <div class="mact call ${online ? '' : 'disabled'}" ${online ? `onclick="callMember('${esc(n)}')"` : ''}>📞</div>
-          <div class="mact ${online ? '' : 'disabled'}" ${online ? `onclick="videoCallMember('${esc(n)}')"` : ''}>📹</div>
-          ${!isFixed ? `<div class="mact" onclick="removeContact('${esc(n)}')" title="Supprimer">✕</div>` : ''}
+          <div class="mact call ${online ? '' : 'disabled'}" data-action="call" data-name="${esc(n)}">📞</div>
+          <div class="mact ${online ? '' : 'disabled'}" data-action="video" data-name="${esc(n)}">📹</div>
+          ${!isFixed ? `<div class="mact" data-action="remove" data-name="${esc(n)}" title="Supprimer">✕</div>` : ''}
         </div>
       </div>`;
     }).join('');
-  list.innerHTML = rows + `<button class="add-contact-btn" onclick="openAddContact()">
+  list.innerHTML = rows + `<button class="add-contact-btn" id="bAddContact">
     <span style="font-size:18px">➕</span> Ajouter un contact
   </button>`;
+  // Event delegation — évite les problèmes d'encodage dans onclick="..."
+  list.onclick = e => {
+    const btn = e.target.closest('[data-action]');
+    if (btn) {
+      const action = btn.dataset.action;
+      const name   = btn.dataset.name;
+      if (action === 'call'   && !btn.classList.contains('disabled')) callMember(name);
+      if (action === 'video'  && !btn.classList.contains('disabled')) videoCallMember(name);
+      if (action === 'remove') removeContact(name);
+    }
+    if (e.target.closest('#bAddContact')) openAddContact();
+  };
 }
 
 // ── Gestion contacts ─────────────────────────────────────
@@ -603,8 +630,12 @@ function renderLobbyButtons() {
   const container = document.querySelector('.name-btns');
   if (!container) return;
   container.innerHTML = CONTACTS.map(n =>
-    `<button class="nbtn" onclick="enterAs('${esc(n)}')">${esc(n)}</button>`
+    `<button class="nbtn" data-name="${esc(n)}">${esc(n)}</button>`
   ).join('');
+  container.onclick = e => {
+    const btn = e.target.closest('.nbtn');
+    if (btn) enterAs(btn.dataset.name);
+  };
 }
 
 // ── Changer de nom ───────────────────────────────────────
