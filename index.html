@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NEXUS — Conférence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#080c10;--surface:#0d1318;--surface2:#111820;--border:#1e2d3d;
+    --accent:#00d4ff;--accent2:#7b61ff;--green:#00ff88;--red:#ff4466;
+    --text:#e8f0f8;--muted:#4a6070;--panel:rgba(13,19,24,0.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);height:100dvh;overflow:hidden}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
+    background-size:40px 40px}
+
+  /* LOBBY */
+  #lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:var(--bg)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:clamp(24px,5vw,44px);width:min(460px,94vw);position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent)}
+  .logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:3px}
+  .logo-sub{color:var(--muted);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:28px}
+  .flabel{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+  .frow{margin-bottom:16px}
+  input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 15px;color:var(--text);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .2s}
+  input[type=text]:focus{border-color:var(--accent)}
+  input[type=text]::placeholder{color:var(--muted)}
+  .rrow{display:flex;gap:8px}
+  .rrow input{flex:1}
+  .bgen{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;white-space:nowrap;transition:all .2s}
+  .bgen:hover{border-color:var(--accent);color:var(--accent)}
+  .bjoin{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:opacity .2s,transform .1s;margin-top:4px}
+  .bjoin:hover{opacity:.9;transform:translateY(-1px)}
+  .bjoin:active{transform:translateY(0)}
+  .bjoin:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+  .divider span{color:var(--muted);font-size:10px}
+  .lnote{font-size:10px;color:var(--muted);text-align:center;line-height:1.8}
+  .cfg-box{background:var(--surface2);border:1px solid rgba(255,180,0,.2);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:10px;color:#ffb400;line-height:1.7}
+  .cfg-box a{color:#ffb400}
+
+  /* APP */
+  #app{display:none;flex-direction:column;height:100dvh;position:relative;z-index:1}
+  #app.active{display:flex}
+  .hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+  .hl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .app-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .rbadge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 11px;font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px;max-width:180px}
+  .rid{color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:1px 3px;flex-shrink:0}
+  .cbtn:hover{color:var(--accent)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .pcnt{font-size:10px;color:var(--muted);white-space:nowrap}
+  .pcnt strong{color:var(--text)}
+
+  /* VIDEO */
+  .varea{flex:1;padding:10px;overflow-y:auto;display:flex;align-items:center;justify-content:center;min-height:0}
+  .vgrid{display:grid;gap:8px;width:100%;max-width:1400px;grid-template-columns:1fr}
+  .vgrid.g2{grid-template-columns:1fr 1fr}
+  .vgrid.g3{grid-template-columns:1fr 1fr 1fr}
+  .vgrid.g4{grid-template-columns:1fr 1fr}
+  .vgrid.gN{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+  @media(max-width:560px){
+    .vgrid.g2,.vgrid.g3,.vgrid.g4{grid-template-columns:1fr}
+    .vgrid.gN{grid-template-columns:1fr 1fr}
+  }
+  .vtile{position:relative;border-radius:12px;overflow:hidden;background:var(--surface);border:1px solid var(--border);aspect-ratio:4/3;transition:border-color .2s,box-shadow .2s}
+  .vtile.speaking{border-color:var(--green);box-shadow:0 0 0 2px rgba(0,255,136,.2)}
+  .vtile.me{border-color:rgba(0,212,255,.35)}
+  .vtile video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+  .tbar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:18px 10px 7px;display:flex;align-items:center;justify-content:space-between}
+  .tname{font-size:10px;color:#fff;display:flex;align-items:center;gap:5px}
+  .ytag{font-size:8px;background:var(--accent);color:#000;padding:1px 4px;border-radius:3px;font-weight:700;letter-spacing:.5px}
+  .tics{display:flex;gap:4px}
+  .tic{font-size:10px;opacity:.75}
+  .tic.off{color:var(--red);opacity:1}
+  .avph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--surface)}
+  .avc{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:21px;font-weight:700;color:#fff}
+  .avn{font-size:11px;color:var(--muted)}
+  .estate{display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 20px;text-align:center}
+  .eicon{font-size:40px;opacity:.2}
+  .etitle{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--muted)}
+  .esub{font-size:10px;color:var(--muted);max-width:260px;line-height:1.8}
+  .sbox{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:10px;color:var(--accent);cursor:pointer;word-break:break-all;max-width:320px;transition:border-color .2s}
+  .sbox:hover{border-color:var(--accent)}
+
+  /* CONTROLS */
+  .cbar{background:var(--panel);border-top:1px solid var(--border);padding:9px 14px 11px;display:flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0;flex-wrap:wrap}
+  .ctrl{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 13px;min-width:58px;cursor:pointer;transition:all .15s;color:var(--text);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px}
+  .ctrl:hover{border-color:var(--accent);background:rgba(0,212,255,.05)}
+  .ctrl.off{background:rgba(255,68,102,.1);border-color:rgba(255,68,102,.3);color:var(--red)}
+  .ctrl .ic{font-size:18px}
+  .ctrl.end{background:var(--red);border-color:var(--red);color:#fff;min-width:68px}
+  .ctrl.end:hover{background:#ff2244}
+
+  /* SETTINGS */
+  .overlay{position:fixed;inset:0;z-index:150;display:none}
+  .overlay.open{display:block}
+  .spanel{position:fixed;z-index:200;bottom:86px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;width:min(400px,94vw);display:none;box-shadow:0 20px 50px rgba(0,0,0,.7)}
+  .spanel.open{display:block;animation:sUp .2s ease}
+  @keyframes sUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  .sph{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .spt{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+  .spc{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;padding:2px 5px}
+  .spc:hover{color:var(--text)}
+  .ssec{margin-bottom:14px}
+  .ssec:last-child{margin-bottom:0}
+  .ssl{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+  .snote{font-size:9px;color:var(--muted);margin-top:5px;line-height:1.6}
+  select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 30px 9px 11px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;outline:none;cursor:pointer;transition:border-color .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a6070' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+  select:focus{border-color:var(--accent)}
+  select option{background:#111820}
+  .tbtn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 11px;color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;transition:all .2s;margin-top:5px}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:8px 16px;font-size:10px;color:var(--accent);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1}
+  .notif{position:fixed;top:62px;right:13px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:8px;padding:9px 13px;font-size:10px;color:var(--text);z-index:500;max-width:230px;transform:translateX(270px);transition:transform .3s}
+  .notif.show{transform:translateX(0)}
+  .ntitle{font-weight:700;color:var(--green);margin-bottom:2px;font-size:9px;letter-spacing:1px}
+
+  /* CONNECTING */
+  .conn-overlay{position:fixed;inset:0;z-index:400;background:rgba(8,12,16,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;backdrop-filter:blur(4px)}
+  .spinner{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ctxt{font-size:11px;color:var(--muted);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="lobby">
+  <div class="card">
+    <div class="logo">NEXUS</div>
+    <div class="logo-sub">Conférence temps réel</div>
+
+    <div class="cfg-box" id="cfgBox" style="display:none">
+      ⚠️ <strong>Firebase requis</strong> pour relier PC ↔ mobile.<br>
+      Voir le <a href="#" onclick="showSetupGuide()">guide de configuration</a> (30 sec).
+    </div>
+
+    <div class="frow">
+      <div class="flabel">Votre nom</div>
+      <input type="text" id="userName" placeholder="ex: Marie Dupont" maxlength="30" autocomplete="nickname">
+    </div>
+    <div class="frow">
+      <div class="flabel">Code de salle</div>
+      <div class="rrow">
+        <input type="text" id="roomId" placeholder="ex: nexus-abc12" maxlength="30" autocomplete="off">
+        <button class="bgen" onclick="genRoom()">Générer</button>
+      </div>
+    </div>
+    <button class="bjoin" id="btnJoin" onclick="joinRoom()">Rejoindre la salle →</button>
+    <div class="divider"><span>WebRTC chiffré · peer-to-peer</span></div>
+    <div class="lnote">Partagez le lien avec le code de salle.<br>La connexion audio/vidéo est directe entre appareils.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hl">
+      <div class="app-logo">NEXUS</div>
+      <div class="rbadge"><div class="dot"></div><span class="rid" id="hRoom">—</span><button class="cbtn" onclick="copyLink()">⎘</button></div>
+    </div>
+    <div class="pcnt" id="peerCount"><strong>1</strong> participant</div>
+  </div>
+  <div class="varea"><div class="vgrid" id="videoGrid"></div></div>
+  <div class="cbar">
+    <button class="ctrl" id="btnMic" onclick="toggleMic()"><span class="ic" id="micIc">🎙️</span><span id="micLbl">Micro</span></button>
+    <button class="ctrl" id="btnCam" onclick="toggleCam()"><span class="ic" id="camIc">📹</span><span id="camLbl">Caméra</span></button>
+    <button class="ctrl" onclick="openSettings()"><span class="ic">⚙️</span><span>Appareils</span></button>
+    <button class="ctrl end" onclick="leaveRoom()"><span class="ic">📵</span><span>Quitter</span></button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="overlay" id="olay" onclick="closeSettings()"></div>
+<div class="spanel" id="spanel">
+  <div class="sph"><div class="spt">⚙️ Appareils</div><button class="spc" onclick="closeSettings()">✕</button></div>
+  <div class="ssec"><div class="ssl">🎙️ Microphone</div><select id="selMic" onchange="changeMic()"></select></div>
+  <div class="ssec">
+    <div class="ssl">🔊 Haut-parleur</div>
+    <select id="selSpk" onchange="changeSpeaker()"></select>
+    <div class="snote" id="spkNote"></div>
+    <button class="tbtn" onclick="testSpeaker()">▶ Tester le son</button>
+  </div>
+  <div class="ssec"><div class="ssl">📹 Caméra</div><select id="selCam" onchange="changeCam()"></select></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="notif" id="notif"><div class="ntitle" id="ntitle"></div><div id="nmsg"></div></div>
+
+<script type="module">
+// ══════════════════════════════════════════════════════════
+//  NEXUS — WebRTC via Firebase Realtime Database signaling
+//  Fonctionne sur PC et mobile (iOS Safari, Android Chrome)
+// ══════════════════════════════════════════════════════════
+
+// ─── REMPLACEZ CES VALEURS PAR VOTRE PROJET FIREBASE ───────────────────────
+// 1. console.firebase.google.com → Nouveau projet → Realtime Database → Mode test
+// 2. Paramètres du projet → Ajouter une app Web → Copier firebaseConfig
+const FIREBASE_CONFIG = {
+  apiKey:            "VOTRE_API_KEY",
+  authDomain:        "VOTRE_PROJET.firebaseapp.com",
+  databaseURL:       "https://VOTRE_PROJET-default-rtdb.firebaseio.com",
+  projectId:         "VOTRE_PROJET",
+  storageBucket:     "VOTRE_PROJET.appspot.com",
+  messagingSenderId: "VOTRE_SENDER_ID",
+  appId:             "VOTRE_APP_ID"
+};
+// ────────────────────────────────────────────────────────────────────────────
+
+import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, push, remove, onValue, onDisconnect, get, off }
+                             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const ICE = { iceServers: [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  // TURN public pour NAT symétrique (mobile → mobile)
+  { urls:'turn:numb.viagenie.ca', username:'webrtc@live.com', credential:'muazkh' },
+  { urls:'turn:turn.anyfirewall.com:443?transport=tcp', username:'webrtc', credential:'webrtc' }
+]};
+
+let db = null, myId = '', myName = '', roomId = '';
+let localStream = null;
+let pcs = {};         // peerId → { pc, name, iceBuf }
+let micOn = true, camOn = true;
+let spkId = '';
+let unsubSignals = null;
+
+// ── LOBBY ──────────────────────────────────────────────────
+window.genRoom = () => {
+  const w=['nexus','arc','flux','echo','nova','volt','sync','wave','lux','quad'];
+  document.getElementById('roomId').value = w[~~(Math.random()*w.length)]+'-'+Math.random().toString(36).substr(2,5);
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(location.search);
+  if (p.get('room')) document.getElementById('roomId').value = p.get('room');
+  // Show config warning if Firebase not set
+  if (FIREBASE_CONFIG.apiKey === 'VOTRE_API_KEY') {
+    document.getElementById('cfgBox').style.display = 'block';
+  }
+});
+
+window.showSetupGuide = () => {
+  alert(
+    "GUIDE FIREBASE (2 minutes)\n\n" +
+    "1. Allez sur : console.firebase.google.com\n" +
+    "2. Créez un projet (nom libre)\n" +
+    "3. Dans le menu gauche : Build → Realtime Database\n" +
+    "4. Créez la base → choisissez 'Mode test'\n" +
+    "5. Paramètres du projet (icône ⚙️) → Vos applications → Ajouter app Web\n" +
+    "6. Copiez les valeurs de firebaseConfig dans ce fichier HTML\n" +
+    "7. Hébergez sur GitHub Pages\n\n" +
+    "C'est gratuit et illimité pour cet usage."
+  );
+  return false;
+};
+
+window.joinRoom = async () => {
+  myName = document.getElementById('userName').value.trim() || 'Anonyme';
+  let rid = document.getElementById('roomId').value.trim().toLowerCase().replace(/[^a-z0-9\-]/g,'').slice(0,30);
+  if (!rid) { genRoom(); rid = document.getElementById('roomId').value; }
+  roomId = rid;
+
+  const btn = document.getElementById('btnJoin');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+
+  const url = new URL(location.href);
+  url.searchParams.set('room', roomId);
+  history.replaceState({}, '', url);
+
+  showConn('Accès à la caméra et au micro…');
+  localStream = await getMedia();
+
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('hRoom').textContent = roomId;
+  document.getElementById('app').classList.add('active');
+
+  showConn('Connexion à la salle…');
+
+  myId = 'u' + Date.now().toString(36) + Math.random().toString(36).substr(2,5);
+
+  await initDB();
+  await populateDevices();
+  renderLocalTile();
+  hideConn();
+};
+
+async function getMedia() {
+  const constraints = [
+    { video:{ width:1280,height:720,facingMode:'user' }, audio:true },
+    { video:true, audio:true },
+    { video:false, audio:true }
+  ];
+  for (const c of constraints) {
+    try { return await navigator.mediaDevices.getUserMedia(c); } catch(e) {}
+  }
+  return new MediaStream();
+}
+
+// ── FIREBASE ───────────────────────────────────────────────
+async function initDB() {
+  if (FIREBASE_CONFIG.apiKey === 'VOTRE_API_KEY') {
+    showToast('⚠️ Firebase non configuré — fonctionne en local seulement');
+    return;
+  }
+  try {
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getDatabase(app);
+    await setupRoom();
+  } catch(e) {
+    console.error('Firebase error:', e);
+    showToast('Erreur Firebase: ' + e.message);
+  }
+}
+
+async function setupRoom() {
+  // 1. Enregistrer notre présence
+  const meRef = ref(db, `rooms/${roomId}/members/${myId}`);
+  await set(meRef, { name: myName, t: Date.now() });
+  onDisconnect(meRef).remove();
+  onDisconnect(ref(db, `rooms/${roomId}/signals/${myId}`)).remove();
+
+  // 2. Appeler tous les membres déjà présents
+  const snap = await get(ref(db, `rooms/${roomId}/members`));
+  if (snap.exists()) {
+    const calls = [];
+    snap.forEach(c => { if (c.key !== myId) calls.push({ id:c.key, name:c.val().name }); });
+    // Petit délai pour s'assurer que le listener de signaux est actif avant d'envoyer des offres
+    await listenSignals();
+    for (const m of calls) await initiateCall(m.id, m.name);
+    return;
+  }
+  // 3. Écouter les signaux entrants
+  await listenSignals();
+}
+
+async function listenSignals() {
+  const sigRef = ref(db, `rooms/${roomId}/signals/${myId}`);
+  onValue(sigRef, async snap => {
+    if (!snap.exists()) return;
+    const items = [];
+    snap.forEach(child => items.push({ key: child.key, val: child.val(), ref: child.ref }));
+    for (const item of items) {
+      await handleSignal(item.val.from, item.val);
+      await remove(item.ref).catch(()=>{});
+    }
+  });
+}
+
+async function sendSig(toId, data) {
+  if (!db) return;
+  await push(ref(db, `rooms/${roomId}/signals/${toId}`), { ...data, from: myId });
+}
+
+// ── WebRTC ─────────────────────────────────────────────────
+async function initiateCall(peerId, peerName) {
+  if (pcs[peerId]) return;
+  const pc = newPC(peerId, peerName);
+  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+  const offer = await pc.createOffer({ offerToReceiveAudio:true, offerToReceiveVideo:true });
+  await pc.setLocalDescription(offer);
+  await sendSig(peerId, { type:'offer', sdp:offer.sdp, name:myName });
+}
+
+async function handleSignal(fromId, msg) {
+  if (msg.type === 'offer') {
+    // Si on reçoit une offre alors qu'on a déjà envoyé une offre → tie-breaking par ID
+    if (pcs[fromId] && pcs[fromId].pc.signalingState !== 'stable') {
+      if (myId > fromId) return; // on garde notre offre
+      pcs[fromId].pc.close(); delete pcs[fromId];
+    }
+    if (pcs[fromId]) return;
+    const pc = newPC(fromId, msg.name || 'Participant');
+    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+    await pc.setRemoteDescription(new RTCSessionDescription({ type:'offer', sdp:msg.sdp }));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await sendSig(fromId, { type:'answer', sdp:answer.sdp, name:myName });
+    flushICE(fromId);
+  }
+  if (msg.type === 'answer') {
+    const p = pcs[fromId];
+    if (p && p.pc.signalingState === 'have-local-offer') {
+      await p.pc.setRemoteDescription(new RTCSessionDescription({ type:'answer', sdp:msg.sdp })).catch(e=>console.warn('answer err',e));
+      flushICE(fromId);
+    }
+  }
+  if (msg.type === 'ice') {
+    const p = pcs[fromId];
+    if (!p) return;
+    if (p.pc.remoteDescription) {
+      await p.pc.addIceCandidate(new RTCIceCandidate(msg.cand)).catch(()=>{});
+    } else {
+      p.iceBuf = p.iceBuf || [];
+      p.iceBuf.push(msg.cand);
+    }
+  }
+  if (msg.type === 'leave') {
+    removePeer(fromId);
+  }
+}
+
+function flushICE(pid) {
+  const p = pcs[pid]; if (!p) return;
+  (p.iceBuf||[]).forEach(c => p.pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}));
+  p.iceBuf = [];
+}
+
+function newPC(peerId, peerName) {
+  const pc = new RTCPeerConnection(ICE);
+  pcs[peerId] = { pc, name:peerName, iceBuf:[], stream:null };
+
+  pc.onicecandidate = ev => {
+    if (ev.candidate) sendSig(peerId, { type:'ice', cand:ev.candidate.toJSON() });
+  };
+
+  pc.ontrack = ev => {
+    const stream = ev.streams[0]; if (!stream) return;
+    // Vérifier si stream déjà affiché
+    if (pcs[peerId].stream === stream) return;
+    pcs[peerId].stream = stream;
+    renderRemoteTile(peerId, stream, pcs[peerId].name);
+    updateCount();
+    showNotif('→ Connecté', (pcs[peerId].name||'Participant') + ' a rejoint');
+  };
+
+  pc.onconnectionstatechange = () => {
+    if (['disconnected','failed','closed'].includes(pc.connectionState)) removePeer(peerId);
+  };
+
+  return pc;
+}
+
+function removePeer(pid) {
+  const name = pcs[pid]?.name || 'Participant';
+  pcs[pid]?.pc?.close();
+  delete pcs[pid];
+  document.getElementById('tile-'+pid)?.remove();
+  updateGrid();
+  updateCount();
+  showNotif('⬅ Déconnecté', name + ' a quitté', true);
+}
+
+// ── RENDER ─────────────────────────────────────────────────
+function renderLocalTile() {
+  const g = document.getElementById('videoGrid');
+  g.innerHTML = '';
+  const tile = makeTile('local', true);
+
+  const vid = document.createElement('video');
+  vid.autoplay=true; vid.muted=true; vid.playsInline=true; vid.srcObject=localStream;
+  if (!camOn) vid.style.display='none';
+  tile.insertBefore(vid, tile.querySelector('.tbar'));
+
+  if (!camOn) tile.insertBefore(mkAv(myName), tile.querySelector('.tbar'));
+  g.appendChild(tile);
+  updateGrid();
+}
+
+function renderRemoteTile(pid, stream, name) {
+  const g = document.getElementById('videoGrid');
+  let tile = document.getElementById('tile-'+pid);
+  if (!tile) { tile = makeTile(pid, false); g.appendChild(tile); }
+  else tile.innerHTML = '';
+
+  // Rebuild tile content
+  const vid = document.createElement('video');
+  vid.autoplay=true; vid.playsInline=true; vid.srcObject=stream;
+  tile.appendChild(vid);
+  applySpeaker(vid);
+
+  const bar = document.createElement('div');
+  bar.className='tbar';
+  bar.innerHTML=`<div class="tname">${esc(name||'Participant')}</div>`;
+  tile.appendChild(bar);
+
+  updateGrid();
+  detectSpeak(pid, stream, tile);
+}
+
+function makeTile(id, isMe) {
+  const t = document.createElement('div');
+  t.className='vtile'+(isMe?' me':'');
+  t.id='tile-'+id;
+  const bar=document.createElement('div'); bar.className='tbar';
+  if (isMe) {
+    bar.innerHTML=`<div class="tname">${esc(myName)}<span class="ytag">VOUS</span></div>
+      <div class="tics"><span class="tic${micOn?'':' off'}" id="lmIc">${micOn?'🎙️':'🔇'}</span><span class="tic${camOn?'':' off'}" id="lcIc">${camOn?'📹':'📷'}</span></div>`;
+  }
+  t.appendChild(bar);
+  return t;
+}
+
+function mkAv(name) {
+  const d=document.createElement('div'); d.className='avph';
+  d.innerHTML=`<div class="avc">${esc((name||'?')[0].toUpperCase())}</div><div class="avn">${esc(name)}</div>`;
+  return d;
+}
+
+function detectSpeak(pid, stream, tile) {
+  try {
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const src=ctx.createMediaStreamSource(stream);
+    const an=ctx.createAnalyser(); an.fftSize=256; src.connect(an);
+    const buf=new Uint8Array(an.frequencyBinCount);
+    let t2;
+    const ck=()=>{
+      if (!document.getElementById('tile-'+pid)){ctx.close();return;}
+      an.getByteFrequencyData(buf);
+      if(buf.reduce((a,b)=>a+b,0)/buf.length>14){tile.classList.add('speaking');clearTimeout(t2);t2=setTimeout(()=>tile.classList.remove('speaking'),700);}
+      requestAnimationFrame(ck);
+    };
+    ck();
+  } catch(e){}
+}
+
+function updateGrid() {
+  const g=document.getElementById('videoGrid');
+  const n=g.querySelectorAll('.vtile').length;
+  g.className='vgrid';
+  if(n===2)g.classList.add('g2');
+  else if(n===3)g.classList.add('g3');
+  else if(n===4)g.classList.add('g4');
+  else if(n>4)g.classList.add('gN');
+
+  const em=document.getElementById('emSt');
+  if(n<=1){
+    if(!em){
+      const e=document.createElement('div'); e.id='emSt'; e.className='estate';
+      e.innerHTML=`<div class="eicon">🔗</div><div class="etitle">En attente…</div>
+        <div class="esub">Partagez ce lien pour inviter des participants</div>
+        <div class="sbox" onclick="copyLink()">${location.href}</div>`;
+      g.appendChild(e);
+    }
+  } else { em?.remove(); }
+}
+
+function updateCount() {
+  const n=Object.keys(pcs).length+1;
+  document.getElementById('peerCount').innerHTML=`<strong>${n}</strong> participant${n>1?'s':''}`;
+}
+
+// ── CONTRÔLES ──────────────────────────────────────────────
+window.toggleMic = () => {
+  micOn=!micOn;
+  localStream.getAudioTracks().forEach(t=>t.enabled=micOn);
+  document.getElementById('btnMic').className='ctrl'+(micOn?'':' off');
+  document.getElementById('micIc').textContent=micOn?'🎙️':'🔇';
+  document.getElementById('micLbl').textContent=micOn?'Micro':'Muet';
+  const ic=document.getElementById('lmIc');
+  if(ic){ic.textContent=micOn?'🎙️':'🔇';ic.className='tic'+(micOn?'':' off');}
+};
+
+window.toggleCam = () => {
+  camOn=!camOn;
+  localStream.getVideoTracks().forEach(t=>t.enabled=camOn);
+  document.getElementById('btnCam').className='ctrl'+(camOn?'':' off');
+  document.getElementById('camIc').textContent=camOn?'📹':'📷';
+  document.getElementById('camLbl').textContent=camOn?'Caméra':'Off';
+  const ic=document.getElementById('lcIc');
+  if(ic){ic.textContent=camOn?'📹':'📷';ic.className='tic'+(camOn?'':' off');}
+  const tile=document.getElementById('tile-local');
+  if(tile){
+    const vid=tile.querySelector('video'), ph=tile.querySelector('.avph');
+    if(camOn){ph?.remove();if(vid){vid.style.display='block';}}
+    else{if(vid)vid.style.display='none';if(!ph)tile.insertBefore(mkAv(myName),tile.querySelector('.tbar'));}
+  }
+};
+
+window.leaveRoom = async () => {
+  if(db){
+    try{
+      const snap=await get(ref(db,`rooms/${roomId}/members`));
+      const sends=[];
+      snap.forEach(c=>{if(c.key!==myId)sends.push(sendSig(c.key,{type:'leave'}));});
+      await Promise.all(sends);
+      await remove(ref(db,`rooms/${roomId}/members/${myId}`));
+      await remove(ref(db,`rooms/${roomId}/signals/${myId}`));
+    }catch(e){}
+  }
+  Object.values(pcs).forEach(p=>p.pc?.close());
+  localStream?.getTracks().forEach(t=>t.stop());
+  location.href=location.pathname;
+};
+
+// ── APPAREILS ──────────────────────────────────────────────
+async function populateDevices() {
+  try {
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    const mics=devs.filter(d=>d.kind==='audioinput');
+    const spks=devs.filter(d=>d.kind==='audiooutput');
+    const cams=devs.filter(d=>d.kind==='videoinput');
+
+    const sM=document.getElementById('selMic');
+    const sSp=document.getElementById('selSpk');
+    const sC=document.getElementById('selCam');
+    const spkNote=document.getElementById('spkNote');
+
+    sM.innerHTML=mics.length?mics.map((d,i)=>`<option value="${d.deviceId}">${d.label||'Micro '+(i+1)}</option>`).join(''):'<option value="">Micro par défaut</option>';
+    sC.innerHTML=cams.length?cams.map((d,i)=>`<option value="${d.deviceId}">${d.label||'Caméra '+(i+1)}</option>`).join(''):'<option value="">Caméra par défaut</option>';
+
+    const sinkOk=typeof document.createElement('video').setSinkId==='function';
+    if(spks.length&&sinkOk){
+      sSp.innerHTML=spks.map((d,i)=>`<option value="${d.deviceId}">${d.label||'Haut-parleur '+(i+1)}</option>`).join('');
+      spkNote.textContent='';
+    } else if(!sinkOk) {
+      sSp.innerHTML='<option value="">Par défaut (système)</option>';
+      spkNote.textContent='⚠️ La sélection du haut-parleur nécessite Chrome ou Edge. Sur iOS/Safari, le son passe par le haut-parleur système.';
+    } else {
+      sSp.innerHTML='<option value="">Par défaut</option>';
+    }
+
+    // Pré-sélectionner les appareils actifs
+    if(localStream){
+      const at=localStream.getAudioTracks()[0];
+      if(at){const s=at.getSettings();if(s.deviceId)sM.value=s.deviceId;}
+      const vt=localStream.getVideoTracks()[0];
+      if(vt){const s=vt.getSettings();if(s.deviceId)sC.value=s.deviceId;}
+    }
+  } catch(e){console.warn('populateDevices',e);}
+}
+
+function applySpeaker(vid) {
+  if(spkId&&typeof vid.setSinkId==='function') vid.setSinkId(spkId).catch(()=>{});
+}
+
+window.changeMic = async () => {
+  const id=document.getElementById('selMic').value;
+  try{
+    const ns=await navigator.mediaDevices.getUserMedia({audio:id?{deviceId:{exact:id}}:true,video:false});
+    const nt=ns.getAudioTracks()[0];
+    localStream.getAudioTracks().forEach(t=>{localStream.removeTrack(t);t.stop();});
+    localStream.addTrack(nt);
+    nt.enabled=micOn;
+    Object.values(pcs).forEach(({pc})=>{
+      const s=pc.getSenders().find(s=>s.track?.kind==='audio');
+      if(s)s.replaceTrack(nt);
+    });
+    showToast('Microphone changé ✓');
+  }catch(e){showToast('Erreur: '+e.message);}
+};
+
+window.changeSpeaker = () => {
+  spkId=document.getElementById('selSpk').value;
+  document.querySelectorAll('.vtile:not(.me) video').forEach(v=>applySpeaker(v));
+  showToast('Haut-parleur sélectionné ✓');
+};
+
+window.testSpeaker = () => {
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(), gain=ctx.createGain();
+    osc.frequency.value=520;
+    gain.gain.setValueAtTime(.25,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime+.5);
+    showToast('🔊 Son de test émis');
+  }catch(e){showToast('Test audio non supporté');}
+};
+
+window.changeCam = async () => {
+  const id=document.getElementById('selCam').value;
+  try{
+    const ns=await navigator.mediaDevices.getUserMedia({video:id?{deviceId:{exact:id}}:true,audio:false});
+    const nt=ns.getVideoTracks()[0];
+    localStream.getVideoTracks().forEach(t=>{localStream.removeTrack(t);t.stop();});
+    localStream.addTrack(nt);
+    nt.enabled=camOn;
+    const lv=document.querySelector('#tile-local video');
+    if(lv)lv.srcObject=localStream;
+    Object.values(pcs).forEach(({pc})=>{
+      const s=pc.getSenders().find(s=>s.track?.kind==='video');
+      if(s)s.replaceTrack(nt);
+    });
+    showToast('Caméra changée ✓');
+  }catch(e){showToast('Erreur: '+e.message);}
+};
+
+// ── SETTINGS ───────────────────────────────────────────────
+window.openSettings=()=>{populateDevices();document.getElementById('spanel').classList.add('open');document.getElementById('olay').classList.add('open');};
+window.closeSettings=()=>{document.getElementById('spanel').classList.remove('open');document.getElementById('olay').classList.remove('open');};
+
+// ── UTILS ──────────────────────────────────────────────────
+window.copyLink=()=>{
+  navigator.clipboard?.writeText(location.href)
+    .then(()=>showToast('Lien copié ✓'))
+    .catch(()=>{const ta=document.createElement('textarea');ta.value=location.href;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();showToast('Lien copié ✓');});
+};
+
+let toastTmr;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTmr);toastTmr=setTimeout(()=>t.classList.remove('show'),2800);}
+window.showToast=showToast;
+
+let notifTmr;
+function showNotif(title,msg,leave=false){
+  const n=document.getElementById('notif'),nt=document.getElementById('ntitle');
+  document.getElementById('nmsg').textContent=msg; nt.textContent=title;
+  n.style.borderLeftColor=leave?'var(--red)':'var(--green)';
+  nt.style.color=leave?'var(--red)':'var(--green)';
+  n.classList.add('show'); clearTimeout(notifTmr); notifTmr=setTimeout(()=>n.classList.remove('show'),4000);
+}
+
+function showConn(sub=''){
+  let el=document.getElementById('connEl');
+  if(!el){el=document.createElement('div');el.id='connEl';el.className='conn-overlay';el.innerHTML='<div class="spinner"></div><div class="ctxt" id="connSub"></div>';document.body.appendChild(el);}
+  document.getElementById('connSub').textContent=sub;
+}
+function hideConn(){document.getElementById('connEl')?.remove();}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+window.addEventListener('beforeunload',()=>{
+  if(db){try{remove(ref(db,`rooms/${roomId}/members/${myId}`));remove(ref(db,`rooms/${roomId}/signals/${myId}`));}catch(e){}}
+  Object.values(pcs).forEach(p=>p.pc?.close());
+  localStream?.getTracks().forEach(t=>t.stop());
+});
+</script>
+</body>
+</html>
