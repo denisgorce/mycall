@@ -31,6 +31,8 @@ const httpServer = http.createServer((req, res) => {
 
 // members[name] = { ws, pushSub, name, id }
 const members = new Map();
+// contacts: liste partagée persistante (en mémoire tant que le serveur tourne)
+let contacts = ['Denis', 'Eugenia', 'Maryse', 'André'];
 const log = (...a) => console.log(new Date().toISOString().slice(11,19), ...a);
 
 const wss = new WebSocketServer({ server: httpServer });
@@ -48,6 +50,7 @@ wss.on('connection', (ws) => {
       const list = [];
       members.forEach((m, n) => { if (n !== myName) list.push({ name: m.name, id: m.id }); });
       ws.send(JSON.stringify({ type: 'members', members: list }));
+      ws.send(JSON.stringify({ type: 'contacts', contacts }));
       broadcast(myName, { type: 'member_joined', name: myName, id: myId });
       log(`JOIN name=${myName} total=${members.size}`);
       return;
@@ -86,6 +89,24 @@ wss.on('connection', (ws) => {
 
     if (msg.type === 'relay' && myName) {
       sendTo(msg.to, { type:msg.relay_type, from:myName, fromId:myId, payload:msg.payload });
+      return;
+    }
+
+    if (msg.type === 'add_contact' && myName) {
+      const name = (msg.name || '').trim().slice(0, 24);
+      if (name && !contacts.includes(name)) {
+        contacts.push(name);
+        broadcast(null, { type: 'contacts', contacts });
+        log(`CONTACT_ADD name=${name} by=${myName}`);
+      }
+      return;
+    }
+
+    if (msg.type === 'remove_contact' && myName) {
+      const name = msg.name;
+      contacts = contacts.filter(c => c !== name);
+      broadcast(null, { type: 'contacts', contacts });
+      log(`CONTACT_DEL name=${name} by=${myName}`);
       return;
     }
 

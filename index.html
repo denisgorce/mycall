@@ -158,6 +158,23 @@ select option{background:#101820}
 .tbtn{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:6px 11px;color:var(--m);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;margin-top:6px;transition:all .15s}
 .tbtn:hover{border-color:var(--a);color:var(--a)}
 
+/* ── MODAL AJOUT CONTACT ── */
+.modal-bg{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg.on{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;width:min(320px,100%);position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent);border-radius:16px 16px 0 0}
+.modal h3{font-family:'Syne',sans-serif;font-size:15px;margin-bottom:16px}
+.modal input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .15s;margin-bottom:12px}
+.modal input:focus{border-color:var(--a)}
+.modal input::placeholder{color:var(--m)}
+.modal-btns{display:flex;gap:8px}
+.mbtn-cancel{flex:1;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .15s}
+.mbtn-cancel:hover{border-color:var(--r);color:var(--r)}
+.mbtn-add{flex:1;padding:11px;background:linear-gradient(130deg,var(--a),var(--a2));border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.mbtn-add:hover{opacity:.85}
+.add-contact-btn{display:flex;align-items:center;gap:8px;padding:11px 14px;background:none;border:1px dashed var(--bd);border-radius:10px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s;width:100%;margin-top:4px}
+.add-contact-btn:hover{border-color:var(--a);color:var(--a)}
+
 /* NOTIFICATIONS PUSH */
 .push-banner{background:var(--s2);border:1px solid rgba(255,149,0,.4);border-radius:8px;padding:10px 12px;margin:10px;font-size:10px;color:var(--o);display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
 .push-banner:hover{border-color:var(--o)}
@@ -271,6 +288,19 @@ select option{background:#101820}
   <div class="ss"><div class="sl">📹 Caméra</div><select id="sCam"></select></div>
 </div>
 
+<!-- MODAL AJOUT CONTACT -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>➕ Nouveau contact</h3>
+    <input type="text" id="newContactName" placeholder="Prénom" maxlength="24"
+      autocorrect="off" autocapitalize="words">
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="modalCancel">Annuler</button>
+      <button class="mbtn-add" id="modalAdd">Ajouter</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="co" id="co"><div class="spin"></div><div class="ctx" id="coTxt"></div></div>
 
@@ -280,7 +310,7 @@ select option{background:#101820}
 // ═══════════════════════════════════════════════════════════
 
 const SIGNAL_SERVER = 'wss://mycall-utj5.onrender.com';
-const CONTACTS = ['Denis', 'Eugenia', 'Maryse', 'André']; // liste fixe des membres
+let CONTACTS = ['Denis', 'Eugenia', 'Maryse', 'André']; // mis à jour par le serveur
 
 const ICE_CFG = { iceServers: [
   { urls:'stun:stun.l.google.com:19302' },
@@ -370,6 +400,10 @@ window.addEventListener('DOMContentLoaded', () => {
   $('sSpk').onchange    = changeSpk;
   $('sCam').onchange    = changeCam;
   $('pushBanner').onclick = requestPush;
+  $('modalCancel').onclick = closeAddContact;
+  $('modalAdd').onclick    = confirmAddContact;
+  $('modalBg').onclick     = e => { if(e.target===$('modalBg')) closeAddContact(); };
+  $('newContactName').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddContact(); });
   // share URL shown in push banner area
 
   // PWA install SW
@@ -453,6 +487,12 @@ function connectWS() {
 
       case 'chat':
         appendMsg(m.from, m.text, m.ts, false); break;
+
+      case 'contacts':
+        CONTACTS = m.contacts;
+        renderMembers();
+        renderLobbyButtons();
+        break;
     }
   };
 
@@ -466,11 +506,12 @@ function relay(to, rtype, payload) { send({type:'relay', to, relay_type:rtype, p
 // ── Membres ───────────────────────────────────────────────
 function renderMembers() {
   const list = $('memberList');
-  list.innerHTML = CONTACTS
+  const rows = CONTACTS
     .filter(n => n !== myName)
     .map(n => {
       const online = !!members[n];
       const initials = n.charAt(0).toUpperCase();
+      const isFixed = ['Denis','Eugenia','Maryse','André'].includes(n);
       return `<div class="member">
         <div class="mavt">${esc(initials)}</div>
         <div class="minfo">
@@ -480,9 +521,41 @@ function renderMembers() {
         <div class="mactions">
           <div class="mact call ${online ? '' : 'disabled'}" ${online ? `onclick="callMember('${esc(n)}')"` : ''}>📞</div>
           <div class="mact ${online ? '' : 'disabled'}" ${online ? `onclick="videoCallMember('${esc(n)}')"` : ''}>📹</div>
+          ${!isFixed ? `<div class="mact" onclick="removeContact('${esc(n)}')" title="Supprimer">✕</div>` : ''}
         </div>
       </div>`;
     }).join('');
+  list.innerHTML = rows + `<button class="add-contact-btn" onclick="openAddContact()">
+    <span style="font-size:18px">➕</span> Ajouter un contact
+  </button>`;
+}
+
+// ── Gestion contacts ─────────────────────────────────────
+function openAddContact() {
+  $('newContactName').value = '';
+  $('modalBg').classList.add('on');
+  setTimeout(() => $('newContactName').focus(), 100);
+}
+function closeAddContact() {
+  $('modalBg').classList.remove('on');
+}
+function confirmAddContact() {
+  const name = $('newContactName').value.trim();
+  if (!name) return;
+  if (CONTACTS.includes(name)) { toast('Contact déjà existant'); return; }
+  send({ type:'add_contact', name });
+  closeAddContact();
+}
+function removeContact(name) {
+  if (!confirm('Supprimer ' + name + ' des contacts ?')) return;
+  send({ type:'remove_contact', name });
+}
+function renderLobbyButtons() {
+  const container = document.querySelector('.name-btns');
+  if (!container) return;
+  container.innerHTML = CONTACTS.map(n =>
+    `<button class="nbtn" onclick="enterAs('${esc(n)}')">${esc(n)}</button>`
+  ).join('');
 }
 
 // ── Appel sortant ─────────────────────────────────────────
