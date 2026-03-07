@@ -13,112 +13,135 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#070b0f;--s1:#0c1117;--s2:#101820;--s3:#141e28;--bd:#1a2a38;
+  --bg:#070b0f;--s1:#0c1117;--s2:#101820;--bd:#1a2a38;
   --a:#00d4ff;--a2:#7b5fff;--g:#00e87a;--r:#ff3d5a;--o:#ff9500;
   --t:#ddeeff;--m:#3a5568;--p:rgba(7,11,15,.97);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
 body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--t);height:100dvh}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* ── LOBBY ── */
-#lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:200;background:var(--bg);padding:20px;
-  background-image:linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);
+#lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:200;background:var(--bg);padding:20px;
+  background-image:linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);
   background-size:48px 48px}
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:18px;padding:36px 32px;width:min(340px,100%);position:relative;overflow:hidden;text-align:center}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent)}
-.logo{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.tagline{color:var(--m);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin:4px 0 28px}
-.fl{font-size:9px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;text-align:left}
-input[type=text]{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:13px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:15px;outline:none;transition:border-color .15s;text-align:center}
-input[type=text]:focus{border-color:var(--a)}
-input[type=text]::placeholder{color:var(--m)}
-.benter{width:100%;padding:14px;background:linear-gradient(130deg,var(--a),var(--a2));border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:.8px;cursor:pointer;text-transform:uppercase;margin-top:12px;transition:opacity .15s}
-.benter:hover{opacity:.88}
-.benter:active{opacity:.7}
-.benter:disabled{opacity:.4;pointer-events:none}
-.name-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
-.nbtn{padding:14px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;color:var(--t);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;letter-spacing:.3px}
-.nbtn:hover,.nbtn:active{border-color:var(--a);background:rgba(0,212,255,.1);color:var(--a);transform:scale(.97)}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:18px;
+  padding:36px 32px;width:min(340px,100%);position:relative;overflow:hidden;text-align:center}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent)}
+.logo{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;
+  background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tagline{color:var(--m);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin:4px 0 24px}
+.lbl{font-size:9px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:left}
+.name-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.nbtn{padding:14px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;
+  color:var(--t);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .18s;letter-spacing:.3px;touch-action:manipulation}
+.nbtn:active{border-color:var(--a);background:rgba(0,212,255,.12);color:var(--a);transform:scale(.96)}
 .nbtn.active{border-color:var(--a);background:rgba(0,212,255,.12);color:var(--a)}
-.hchg{background:none;border:1px solid var(--bd);border-radius:6px;color:var(--m);cursor:pointer;font-size:13px;padding:3px 8px;transition:all .15s;flex-shrink:0}
-.hchg:hover{border-color:var(--a);color:var(--a)}
-.binstall{width:100%;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:8px;transition:all .15s}
-.binstall:hover{border-color:var(--a);color:var(--a)}
-.ios-hint{font-size:10px;color:var(--m);line-height:1.8;margin-top:12px;padding:10px;background:var(--s2);border-radius:8px;border:1px dashed var(--bd)}
+.binstall{display:none;width:100%;padding:11px;background:none;border:1px solid var(--bd);
+  border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;
+  cursor:pointer;margin-top:4px;transition:all .15s;touch-action:manipulation}
+.binstall:active{border-color:var(--a);color:var(--a)}
+.ios-hint{display:none;font-size:10px;color:var(--m);line-height:1.8;margin-top:12px;
+  padding:10px;background:var(--s2);border-radius:8px;border:1px dashed var(--bd)}
 .ios-hint b{color:var(--a)}
 
-/* ── LAYOUT PRINCIPAL ── */
+/* ── APP ── */
 #app{display:none;height:100dvh;flex-direction:column}
 #app.on{display:flex}
-
-/* HEADER */
-.hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--p);border-bottom:1px solid var(--bd);flex-shrink:0}
-.hlogo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--p);border-bottom:1px solid var(--bd);flex-shrink:0}
+.hlogo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;
+  background:linear-gradient(130deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hname{font-size:11px;color:var(--m);flex:1}
 .hname b{color:var(--t)}
-.hdot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0;animation:pulse 2s ease infinite}
+.hchg{background:none;border:1px solid var(--bd);border-radius:6px;color:var(--m);
+  cursor:pointer;font-size:13px;padding:4px 9px;transition:all .15s;flex-shrink:0;touch-action:manipulation}
+.hchg:active{border-color:var(--a);color:var(--a)}
+.hdot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0;
+  animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,232,122,.4)}50%{box-shadow:0 0 0 5px rgba(0,232,122,0)}}
-
-/* ONGLETS */
 .tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0}
-.tab{flex:1;padding:10px 4px;text-align:center;font-size:9px;color:var(--m);letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:9px;color:var(--m);
+  letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;user-select:none;touch-action:manipulation}
 .tab.on{color:var(--a);border-bottom-color:var(--a)}
+.view{display:none;flex:1;overflow-y:auto;min-height:0;flex-direction:column}
+.view.on{display:flex}
 
-/* CONTENU */
-.view{display:none;flex:1;overflow-y:auto;min-height:0}
-.view.on{display:flex;flex-direction:column}
-
-/* ── VUE CONTACTS ── */
-.cl{padding:10px}
-.empty{text-align:center;padding:40px 20px;color:var(--m);font-size:11px;line-height:2}
-.member{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;transition:border-color .15s}
-.member:hover{border-color:rgba(0,212,255,.3)}
-.mavt{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff;flex-shrink:0}
+/* ── CONTACTS ── */
+.cl{padding:10px;flex:1}
+.member{display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:var(--s1);border:1px solid var(--bd);border-radius:10px;margin-bottom:8px}
+.mavt{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff;flex-shrink:0}
 .minfo{flex:1;min-width:0}
 .mname{font-size:12px;font-weight:500;color:var(--t)}
 .mstatus{font-size:9px;color:var(--g);margin-top:2px;display:flex;align-items:center;gap:4px}
-
-.mstatus.offline{color:var(--m)}
-.mstatus.offline::before{background:var(--m)}
-.mact.disabled{opacity:.25;cursor:not-allowed}
-.mact.disabled:hover{border-color:var(--bd);background:var(--s2)}
 .mstatus::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
+.mstatus.off{color:var(--m)}.mstatus.off::before{background:var(--m)}
 .mactions{display:flex;gap:6px;flex-shrink:0}
-.mact{width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .15s}
-.mact:hover{border-color:var(--a);background:rgba(0,212,255,.1)}
-.mact.call{border-color:rgba(0,232,122,.3);background:rgba(0,232,122,.08)}
-.mact.call:hover{border-color:var(--g);background:rgba(0,232,122,.18)}
+.mact{width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);
+  background:var(--s2);display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;transition:all .15s;touch-action:manipulation}
+.mact:active{border-color:var(--a);background:rgba(0,212,255,.1)}
+.mact.mcall{border-color:rgba(0,232,122,.3);background:rgba(0,232,122,.08)}
+.mact.mcall:active{border-color:var(--g);background:rgba(0,232,122,.2)}
+.mact.mdis{opacity:.25;pointer-events:none}
+.add-btn{display:flex;align-items:center;gap:8px;padding:11px 14px;background:none;
+  border:1px dashed var(--bd);border-radius:10px;color:var(--m);
+  font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;
+  transition:all .15s;width:100%;touch-action:manipulation}
+.add-btn:active{border-color:var(--a);color:var(--a)}
 
-/* ── VUE CHAT ── */
+/* ── PUSH BANNER ── */
+.push-banner{display:none;background:var(--s2);border:1px solid rgba(255,149,0,.35);
+  border-radius:10px;padding:12px 14px;margin:10px 10px 0}
+.pb-row{display:flex;align-items:center;gap:10px}
+.pb-ic{font-size:20px;flex-shrink:0}
+.pb-txt{flex:1;min-width:0}
+.pb-title{font-size:11px;color:var(--o);font-weight:500;margin-bottom:2px}
+.pb-sub{font-size:10px;color:var(--m)}
+.pb-btn{background:var(--o);border:none;border-radius:6px;color:#000;
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+  padding:7px 12px;cursor:pointer;flex-shrink:0;touch-action:manipulation}
+
+/* ── CHAT ── */
 .msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .msg{max-width:78%;padding:8px 12px;border-radius:10px;font-size:11px;line-height:1.6;word-break:break-word}
-.msg.me{align-self:flex-end;background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(123,95,255,.15));border:1px solid rgba(0,212,255,.2)}
+.msg.me{align-self:flex-end;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2)}
 .msg.them{align-self:flex-start;background:var(--s2);border:1px solid var(--bd)}
-.msender{font-size:8px;color:var(--m);margin-bottom:2px;letter-spacing:.5px}
+.msender{font-size:8px;color:var(--m);margin-bottom:2px}
 .mtime{font-size:8px;color:var(--m);margin-top:3px;text-align:right}
 .chatbar{display:flex;gap:8px;padding:10px 12px;background:var(--p);border-top:1px solid var(--bd);flex-shrink:0}
-.chatbar input{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:10px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color .15s}
+.chatbar input{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:20px;
+  padding:10px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:12px;outline:none}
 .chatbar input:focus{border-color:var(--a)}
 .chatbar input::placeholder{color:var(--m)}
-.bsend{background:linear-gradient(130deg,var(--a),var(--a2));border:none;border-radius:50%;width:40px;height:40px;color:#000;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
-.bsend:hover{opacity:.85}
+.bsend{background:linear-gradient(130deg,var(--a),var(--a2));border:none;border-radius:50%;
+  width:40px;height:40px;color:#000;font-size:16px;cursor:pointer;flex-shrink:0;touch-action:manipulation}
 
 /* ── APPEL ENTRANT ── */
-#callIn{position:fixed;inset:0;z-index:300;background:rgba(7,11,15,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;backdrop-filter:blur(8px)}
+#callIn{position:fixed;inset:0;z-index:300;background:rgba(7,11,15,.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
 #callIn.on{display:flex}
-.ci-ring{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a));display:flex;align-items:center;justify-content:center;font-size:36px;animation:ring 1s ease infinite}
+.ci-ring{width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--a2),var(--a));
+  display:flex;align-items:center;justify-content:center;font-size:36px;
+  animation:ring 1s ease infinite}
 @keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.5)}50%{box-shadow:0 0 0 22px rgba(0,212,255,0)}}
 .ci-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
 .ci-sub{font-size:11px;color:var(--m);letter-spacing:1px}
 .ci-btns{display:flex;gap:24px;margin-top:10px}
-.ci-btn{width:64px;height:64px;border-radius:50%;border:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s}
-.ci-btn:active{transform:scale(.9)}
-.ci-btn.accept{background:var(--g)}
-.ci-btn.decline{background:var(--r)}
+.ci-btn{width:64px;height:64px;border-radius:50%;border:none;font-size:24px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.ci-btn.accept{background:var(--g)}.ci-btn.decline{background:var(--r)}
 
-/* ── VUE APPEL EN COURS ── */
+/* ── APPEL EN COURS ── */
 #callView{position:fixed;inset:0;z-index:250;background:var(--bg);display:none;flex-direction:column}
 #callView.on{display:flex}
 .cv-grid{flex:1;display:grid;gap:8px;padding:10px;min-height:0}
@@ -126,111 +149,118 @@ input[type=text]::placeholder{color:var(--m)}
 .cv-grid.duo{grid-template-columns:1fr 1fr}
 .vt{position:relative;border-radius:10px;overflow:hidden;background:var(--s1);border:1px solid var(--bd)}
 .vt video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
-.vtb{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:14px 10px 7px;display:flex;align-items:center;justify-content:space-between}
-.vtn{font-size:10px;color:#fff;display:flex;align-items:center;gap:4px}
+.vtb{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.8));
+  padding:14px 10px 7px;display:flex;align-items:center}
+.vtn{font-size:10px;color:#fff;display:flex;align-items:center;gap:4px;flex:1}
 .ytag{font-size:7px;background:var(--a);color:#000;padding:1px 5px;border-radius:3px;font-weight:700}
-.av{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--s2)}
-.avc{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--a2),var(--a));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:#fff}
-.cvbar{background:var(--p);border-top:1px solid var(--bd);padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;flex-wrap:wrap}
-.cctrl{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;min-width:52px;cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;color:var(--t);user-select:none;transition:all .15s}
-.cctrl:active{transform:scale(.94)}
+.cvbar{background:var(--p);border-top:1px solid var(--bd);padding:10px 14px;
+  display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.cctrl{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--s2);
+  border:1px solid var(--bd);border-radius:10px;padding:8px 10px;min-width:50px;
+  cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;color:var(--t);
+  user-select:none;transition:all .15s;touch-action:manipulation}
 .cctrl .ic{font-size:17px}
 .cctrl.off{background:rgba(255,61,90,.08);border-color:rgba(255,61,90,.3);color:var(--r)}
 .cctrl.end{background:var(--r);border-color:var(--r);color:#fff}
 .cvtimer{font-size:11px;color:var(--m);letter-spacing:2px;flex:1;text-align:center}
 
-/* SETTINGS */
+/* ── MODALES ── */
+.modal-bg{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);
+  display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bd);border-radius:16px;
+  padding:24px;width:min(320px,100%);position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent);border-radius:16px 16px 0 0}
+.modal h3{font-family:'Syne',sans-serif;font-size:15px;margin-bottom:16px}
+.modal p{font-size:11px;color:var(--m);line-height:1.8;margin-bottom:14px}
+.modal input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;
+  padding:12px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:14px;
+  outline:none;margin-bottom:12px}
+.modal input:focus{border-color:var(--a)}
+.modal input::placeholder{color:var(--m)}
+.push-instr{font-size:11px;color:var(--t);line-height:2;background:var(--s2);
+  border-radius:8px;padding:12px;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px}
+.mbtn-cancel{flex:1;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;
+  color:var(--m);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;touch-action:manipulation}
+.mbtn-add{flex:1;padding:11px;background:linear-gradient(130deg,var(--a),var(--a2));
+  border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation}
+
+/* ── SETTINGS ── */
 .olay{position:fixed;inset:0;z-index:350;display:none;background:rgba(0,0,0,.6)}
 .olay.on{display:block}
-.sp{position:fixed;z-index:400;bottom:90px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:18px;width:min(360px,94vw);display:none;box-shadow:0 20px 48px rgba(0,0,0,.8);max-height:75dvh;overflow-y:auto}
-.sp.on{display:block;animation:spup .18s ease}
-@keyframes spup{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.sph{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.sp{position:fixed;z-index:400;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:18px;
+  width:min(360px,94vw);display:none;max-height:75dvh;overflow-y:auto}
+.sp.on{display:block}
+.sph{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
 .spt{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
 .spc{background:none;border:none;color:var(--m);font-size:18px;cursor:pointer}
 .ss{margin-bottom:12px}
 .sl{font-size:9px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
-.sn{font-size:9px;color:#ffb400;padding:5px 8px;background:var(--s2);border-radius:5px;border-left:2px solid #ffb400;margin-top:5px;line-height:1.6;display:none}
-select{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:9px 28px 9px 11px;color:var(--t);font-family:'DM Mono',monospace;font-size:11px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%233a5568' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
-select:focus{border-color:var(--a)}
-select:disabled{opacity:.4;cursor:default}
+.sn{font-size:9px;color:#ffb400;padding:5px 8px;background:var(--s2);
+  border-radius:5px;border-left:2px solid #ffb400;margin-top:5px;line-height:1.6;display:none}
+select{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;
+  padding:9px 28px 9px 11px;color:var(--t);font-family:'DM Mono',monospace;font-size:11px;
+  outline:none;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%233a5568' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center}
 select option{background:#101820}
 .sr{display:flex;gap:6px;margin-top:6px}
-.sb{flex:1;padding:7px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;color:var(--m);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;text-align:center;transition:all .15s}
-.sb.on,.sb:hover{border-color:var(--a);color:var(--a);background:rgba(0,212,255,.08)}
-.tbtn{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:6px 11px;color:var(--m);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;margin-top:6px;transition:all .15s}
-.tbtn:hover{border-color:var(--a);color:var(--a)}
+.sb{flex:1;padding:7px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;
+  color:var(--m);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;text-align:center}
+.sb.on{border-color:var(--a);color:var(--a);background:rgba(0,212,255,.08)}
+.tbtn{background:var(--s2);border:1px solid var(--bd);border-radius:6px;
+  padding:6px 11px;color:var(--m);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;margin-top:6px}
 
-/* ── MODAL AJOUT CONTACT ── */
-.modal-bg{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
-.modal-bg.on{display:flex}
-.modal{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:24px;width:min(320px,100%);position:relative}
-.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),var(--a2),transparent);border-radius:16px 16px 0 0}
-.modal h3{font-family:'Syne',sans-serif;font-size:15px;margin-bottom:16px}
-.modal input{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;color:var(--t);font-family:'DM Mono',monospace;font-size:14px;outline:none;transition:border-color .15s;margin-bottom:12px}
-.modal input:focus{border-color:var(--a)}
-.modal input::placeholder{color:var(--m)}
-.modal-btns{display:flex;gap:8px}
-.mbtn-cancel{flex:1;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .15s}
-.mbtn-cancel:hover{border-color:var(--r);color:var(--r)}
-.mbtn-add{flex:1;padding:11px;background:linear-gradient(130deg,var(--a),var(--a2));border:none;border-radius:8px;color:#000;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s}
-.mbtn-add:hover{opacity:.85}
-.add-contact-btn{display:flex;align-items:center;gap:8px;padding:11px 14px;background:none;border:1px dashed var(--bd);border-radius:10px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s;width:100%;margin-top:4px}
-.add-contact-btn:hover{border-color:var(--a);color:var(--a)}
-
-/* NOTIFICATIONS PUSH */
-.push-banner{background:var(--s2);border:1px solid rgba(255,149,0,.35);border-radius:10px;padding:12px 14px;margin:10px 10px 0;transition:all .15s}
-.push-banner:hover{border-color:var(--o)}
-.pb-main{display:flex;align-items:center;gap:10px}
-.pbi{font-size:20px;flex-shrink:0}
-.pb-text{flex:1;min-width:0}
-.pb-title{font-size:11px;color:var(--o);font-weight:500;margin-bottom:2px}
-.pb-sub{font-size:10px;color:var(--m)}
-.pb-btn{background:var(--o);border:none;border-radius:6px;color:#000;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:7px 12px;cursor:pointer;flex-shrink:0;transition:opacity .15s}
-.pb-btn:hover{opacity:.85}
-
-/* TOAST / NOTIF */
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--a);border-radius:7px;padding:7px 14px;font-size:10px;color:var(--a);z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+/* ── UTILITAIRES ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--s1);border:1px solid var(--a);border-radius:7px;
+  padding:7px 14px;font-size:10px;color:var(--a);z-index:999;
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.on{opacity:1}
-.co{position:fixed;inset:0;z-index:500;background:rgba(7,11,15,.95);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.co{position:fixed;inset:0;z-index:500;background:rgba(7,11,15,.95);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .co.on{display:flex}
-.spin{width:28px;height:28px;border-radius:50%;border:2px solid var(--bd);border-top-color:var(--a);animation:spin .7s linear infinite}
+.spin{width:28px;height:28px;border-radius:50%;border:2px solid var(--bd);
+  border-top-color:var(--a);animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ctx{font-size:11px;color:var(--m);letter-spacing:.6px}
 </style>
 </head>
 <body>
 
-<!-- LOBBY -->
+<!-- ═══ LOBBY ═══ -->
 <div id="lobby">
   <div class="card">
     <div class="logo">NEXUS</div>
     <div class="tagline">Messagerie · Appels vidéo</div>
-    <div class="fl">Qui êtes-vous ?</div>
+    <div class="lbl">Qui êtes-vous ?</div>
     <div class="name-btns" id="nameBtns">
       <button class="nbtn" data-name="Denis">Denis</button>
       <button class="nbtn" data-name="Eugenia">Eugenia</button>
       <button class="nbtn" data-name="Maryse">Maryse</button>
       <button class="nbtn" data-name="André">André</button>
     </div>
-    <button class="binstall" id="bInstall" style="display:none">⬇ Installer l’application</button>
-    <div class="ios-hint" id="iosHint" style="display:none">
-      📲 Sur iPhone : Safari → <b>Partager</b> → <b>Sur l’écran d’accueil</b>
+    <button class="binstall" id="bInstall">⬇ Installer l'application</button>
+    <div class="ios-hint" id="iosHint">
+      📲 Sur iPhone : Safari → <b>Partager</b> → <b>Sur l'écran d'accueil</b>
     </div>
   </div>
 </div>
 
-<!-- APP -->
+<!-- ═══ APP ═══ -->
 <div id="app">
-  <!-- Header -->
   <div class="hdr">
     <div class="hlogo">NEXUS</div>
     <div class="hname">Connecté en tant que <b id="hMyName"></b></div>
-    <button class="hchg" id="bChangeName" title="Changer de nom">✎</button>
+    <button class="hchg" id="bChangeName">✎</button>
     <div class="hdot"></div>
   </div>
-
-  <!-- Onglets -->
   <div class="tabs">
     <div class="tab on" data-tab="contacts">👥 Contacts</div>
     <div class="tab" data-tab="chat">💬 Messages</div>
@@ -238,28 +268,14 @@ select option{background:#101820}
 
   <!-- VUE CONTACTS -->
   <div class="view on" id="vContacts">
-    <div id="pushBanner" class="push-banner" style="display:none">
-      <div class="pb-main">
-        <span class="pbi">🔔</span>
-        <div class="pb-text">
+    <div class="push-banner" id="pushBanner">
+      <div class="pb-row">
+        <span class="pb-ic">🔔</span>
+        <div class="pb-txt">
           <div class="pb-title">Activer les notifications</div>
           <div class="pb-sub">Recevez les appels même écran éteint</div>
         </div>
         <button class="pb-btn" id="pbBtn">Activer</button>
-      </div>
-    </div>
-    <!-- Modal instructions si notifications bloquées -->
-    <div class="modal-bg" id="pushBlockedModal">
-      <div class="modal">
-        <h3>🔔 Notifications bloquées</h3>
-        <p style="font-size:11px;color:var(--m);line-height:1.8;margin-bottom:16px">
-          Vous avez précédemment refusé les notifications.<br>
-          Pour les activer, suivez ces étapes :
-        </p>
-        <div id="pushInstructions" style="font-size:11px;color:var(--t);line-height:2;background:var(--s2);border-radius:8px;padding:12px;margin-bottom:16px"></div>
-        <div class="modal-btns">
-          <button class="mbtn-cancel" id="pushBlockedClose">Fermer</button>
-        </div>
       </div>
     </div>
     <div class="cl" id="memberList"></div>
@@ -268,7 +284,9 @@ select option{background:#101820}
   <!-- VUE CHAT -->
   <div class="view" id="vChat">
     <div class="msgs" id="msgs">
-      <div class="empty">Envoyez un message à tout le groupe</div>
+      <div style="text-align:center;padding:40px 20px;color:var(--m);font-size:11px;line-height:2">
+        Envoyez un message au groupe
+      </div>
     </div>
     <div class="chatbar">
       <input type="text" id="chatIn" placeholder="Message…" maxlength="500" autocomplete="off">
@@ -277,23 +295,23 @@ select option{background:#101820}
   </div>
 </div>
 
-<!-- APPEL ENTRANT -->
+<!-- ═══ APPEL ENTRANT ═══ -->
 <div id="callIn">
   <div class="ci-ring" id="ciAvt">📞</div>
   <div class="ci-name" id="ciName">Appel entrant</div>
-  <div class="ci-sub">Appel vidéo entrant</div>
+  <div class="ci-sub" id="ciSub">Appel entrant</div>
   <div class="ci-btns">
     <button class="ci-btn decline" id="bDecline">📵</button>
     <button class="ci-btn accept" id="bAccept">📞</button>
   </div>
 </div>
 
-<!-- APPEL EN COURS -->
+<!-- ═══ APPEL EN COURS ═══ -->
 <div id="callView">
   <div class="cv-grid solo" id="cvGrid"></div>
   <div class="cvbar">
-    <button class="cctrl" id="cvMic"><span class="ic" id="cvMicIc">🎙️</span><span id="cvMicLb">Micro</span></button>
-    <button class="cctrl" id="cvCam"><span class="ic" id="cvCamIc">📹</span><span id="cvCamLb">Caméra</span></button>
+    <button class="cctrl" id="cvMic"><span class="ic">🎙️</span><span id="cvMicLb">Micro</span></button>
+    <button class="cctrl" id="cvCam"><span class="ic">📹</span><span id="cvCamLb">Caméra</span></button>
     <button class="cctrl" id="cvUpgrade" style="display:none"><span class="ic">📹</span><span>Vidéo</span></button>
     <div class="cvtimer" id="cvTimer">00:00</div>
     <button class="cctrl" id="cvSet"><span class="ic">⚙️</span><span>Appareils</span></button>
@@ -301,7 +319,7 @@ select option{background:#101820}
   </div>
 </div>
 
-<!-- SETTINGS -->
+<!-- ═══ SETTINGS ═══ -->
 <div class="olay" id="olay"></div>
 <div class="sp" id="sp">
   <div class="sph"><div class="spt">⚙️ Appareils</div><button class="spc" id="spClose">✕</button></div>
@@ -319,15 +337,27 @@ select option{background:#101820}
   <div class="ss"><div class="sl">📹 Caméra</div><select id="sCam"></select></div>
 </div>
 
-<!-- MODAL AJOUT CONTACT -->
-<div class="modal-bg" id="modalBg">
+<!-- ═══ MODAL AJOUT CONTACT ═══ -->
+<div class="modal-bg" id="modalContact">
   <div class="modal">
     <h3>➕ Nouveau contact</h3>
     <input type="text" id="newContactName" placeholder="Prénom" maxlength="24"
       autocorrect="off" autocapitalize="words">
     <div class="modal-btns">
-      <button class="mbtn-cancel" id="modalCancel">Annuler</button>
-      <button class="mbtn-add" id="modalAdd">Ajouter</button>
+      <button class="mbtn-cancel" id="mContactCancel">Annuler</button>
+      <button class="mbtn-add" id="mContactAdd">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL NOTIF BLOQUÉES ═══ -->
+<div class="modal-bg" id="modalPushBlocked">
+  <div class="modal">
+    <h3>🔔 Notifications bloquées</h3>
+    <p>Vous avez refusé les notifications. Pour les activer :</p>
+    <div class="push-instr" id="pushInstr"></div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="mPushClose">Fermer</button>
     </div>
   </div>
 </div>
@@ -336,199 +366,205 @@ select option{background:#101820}
 <div class="co" id="co"><div class="spin"></div><div class="ctx" id="coTxt"></div></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-//  NEXUS — App complète : contacts, chat, appels vidéo, PWA
-// ═══════════════════════════════════════════════════════════
+'use strict';
+// ════════════════════════════════════════════════════════════
+//  NEXUS — Signaling WebRTC + Chat + PWA + Push
+// ════════════════════════════════════════════════════════════
 
-const SIGNAL_SERVER = 'wss://mycall-utj5.onrender.com';
-let CONTACTS = ['Denis', 'Eugenia', 'Maryse', 'André']; // mis à jour par le serveur
+const SIGNAL = 'wss://mycall-utj5.onrender.com';
+const FIXED  = ['Denis','Eugenia','Maryse','André'];
 
-const ICE_CFG = { iceServers: [
-  { urls:'stun:stun.l.google.com:19302' },
-  { urls:'stun:stun1.l.google.com:19302' },
-  { urls:'turn:openrelay.metered.ca:80',    username:'openrelayproject', credential:'openrelayproject' },
-  { urls:'turn:openrelay.metered.ca:443',   username:'openrelayproject', credential:'openrelayproject' },
-  { urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject' },
+const ICE = { iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'turn:openrelay.metered.ca:80',   username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443',  username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
 ]};
 
 const isMob = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+// ── État ──────────────────────────────────────────────────
+let CONTACTS= [...FIXED];
 let myName  = '';
 let myId    = '';
 let ws      = null;
 let wsOk    = false;
-let members = {};   // name → { name, id }
-let ls      = null; // local stream
-let pc      = null; // RTCPeerConnection (un seul appel à la fois)
-let callPeer= null; // nom du correspondant actuel
+let online  = {};     // name → {name,id}
+let ls      = null;
+let pc      = null;
+let callPeer= null;
+let callVid = true;
 let micOn   = true;
 let camOn   = true;
 let spkId   = '';
-let timerInt= null;
-let timerSec= 0;
-let ringtone= null;
+let timerI  = null;
+let timerS  = 0;
+let ringI   = null;
 let vapidKey= null;
+let toastT  = null;
 
-const $ = id => document.getElementById(id);
-const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const log = (...a) => console.log('[NEXUS]',...a);
+const ge = id => document.getElementById(id);
+const esc= s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const log= (...a) => console.log('[NX]',...a);
 
-// Capturer l'événement PWA dès que possible (avant DOMContentLoaded)
-let deferredPrompt = null;
+// ── PWA install — capturer AVANT DOMContentLoaded ────────
+let pwaPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
-  deferredPrompt = e;
-  // Afficher le bouton si le DOM est prêt, sinon il sera affiché dans DOMContentLoaded
-  const btn = document.getElementById('bInstall');
-  if (btn) btn.style.display = 'block';
+  pwaPrompt = e;
+  const b = ge('bInstall');
+  if (b) b.style.display = 'block';
+  log('PWA prompt ready');
 });
 window.addEventListener('appinstalled', () => {
-  deferredPrompt = null;
-  const btn = document.getElementById('bInstall');
-  if (btn) btn.style.display = 'none';
+  pwaPrompt = null;
+  const b = ge('bInstall');
+  if (b) b.style.display = 'none';
+  toast('✅ Application installée !');
 });
 
-// ── Init ──────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  // PWA install prompt
-  // Si beforeinstallprompt a déjà été capturé avant DOMContentLoaded
-  if (deferredPrompt) { $('bInstall').style.display = 'block'; log('PWA prompt déjà prêt'); }
-  else { log('PWA prompt pas encore disponible'); }
-  $('bInstall').onclick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') $('bInstall').style.display = 'none';
-    deferredPrompt = null;
-  };
-  // iOS : expliquer comment faire manuellement
-  if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && !navigator.standalone) {
-    $('iosHint').style.display = 'block';
-  }
+// ════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
 
-  // Boutons de sélection du nom
-  document.getElementById('nameBtns').addEventListener('click', e => {
-    const btn = e.target.closest('.nbtn');
-    if (btn && btn.dataset.name) enterAs(btn.dataset.name);
+  // Bouton installer
+  if (pwaPrompt) ge('bInstall').style.display = 'block';
+  ge('bInstall').addEventListener('click', async () => {
+    if (!pwaPrompt) return;
+    pwaPrompt.prompt();
+    const { outcome } = await pwaPrompt.userChoice;
+    if (outcome === 'accepted') ge('bInstall').style.display = 'none';
+    pwaPrompt = null;
+  });
+
+  // iOS hint
+  if (isIOS && !navigator.standalone) ge('iosHint').style.display = 'block';
+
+  // Boutons de nom — event delegation sur le conteneur
+  ge('nameBtns').addEventListener('click', e => {
+    const b = e.target.closest('.nbtn');
+    if (b) enterAs(b.dataset.name);
   });
 
   // Onglets
   document.querySelectorAll('.tab').forEach(t => {
-    t.onclick = () => {
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
-      document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+      document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
       t.classList.add('on');
-      $('v'+t.dataset.tab.charAt(0).toUpperCase()+t.dataset.tab.slice(1)).classList.add('on');
-    };
+      ge('v' + t.dataset.tab[0].toUpperCase() + t.dataset.tab.slice(1)).classList.add('on');
+    });
   });
 
-  // Délégation clics sur la liste de contacts (posé une seule fois)
-  document.getElementById('memberList').addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (btn) {
-      const action = btn.dataset.action;
-      const name   = btn.dataset.name;
-      if (action === 'call'  && !btn.classList.contains('disabled')) callMember(name);
-      if (action === 'video' && !btn.classList.contains('disabled')) videoCallMember(name);
-      if (action === 'remove') removeContact(name);
-    }
-    if (e.target.closest('#bAddContact')) openAddContact();
+  // Contacts — event delegation sur la liste
+  ge('memberList').addEventListener('click', e => {
+    const b = e.target.closest('[data-action]');
+    if (!b) { if (e.target.closest('#bAddContact')) openModalContact(); return; }
+    const { action, name } = b.dataset;
+    if (b.classList.contains('mdis')) return;
+    if (action === 'call')   callMember(name);
+    if (action === 'video')  videoMember(name);
+    if (action === 'remove') removeContact(name);
   });
 
   // Chat
-  $('chatIn').addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
-  $('bSend').onclick = sendChat;
+  ge('chatIn').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+  ge('bSend').addEventListener('click', sendChat);
 
   // Appel
-  $('bAccept').onclick  = acceptCall;
-  $('bDecline').onclick = declineCall;
-  $('cvEnd').onclick     = hangup;
-  $('cvUpgrade').onclick = upgradeToVideo;
-  $('cvMic').onclick    = toggleMic;
-  $('cvCam').onclick    = toggleCam;
-  $('cvSet').onclick    = openSet;
-  $('olay').onclick     = closeSet;
-  $('spClose').onclick  = closeSet;
-  $('bTest').onclick    = testSpk;
-  $('bSpk').onclick     = () => setAudio('speaker');
-  $('bEar').onclick     = () => setAudio('earpiece');
-  $('sMic').onchange    = changeMic;
-  $('sSpk').onchange    = changeSpk;
-  $('sCam').onchange    = changeCam;
-  $('pbBtn').onclick         = requestPush;
-  $('pushBlockedClose').onclick = () => $('pushBlockedModal').classList.remove('on');
-  $('pushBlockedModal').onclick = e => { if(e.target===$('pushBlockedModal')) $('pushBlockedModal').classList.remove('on'); };
-  $('bChangeName').onclick = changeName;
-  $('modalCancel').onclick = closeAddContact;
-  $('modalAdd').onclick    = confirmAddContact;
-  $('modalBg').onclick     = e => { if(e.target===$('modalBg')) closeAddContact(); };
-  $('newContactName').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddContact(); });
-  // share URL shown in push banner area
+  ge('bAccept').addEventListener('click', acceptCall);
+  ge('bDecline').addEventListener('click', declineCall);
+  ge('cvEnd').addEventListener('click', hangup);
+  ge('cvUpgrade').addEventListener('click', upgradeToVideo);
+  ge('cvMic').addEventListener('click', toggleMic);
+  ge('cvCam').addEventListener('click', toggleCam);
+  ge('cvSet').addEventListener('click', openSet);
+  ge('olay').addEventListener('click', closeSet);
+  ge('spClose').addEventListener('click', closeSet);
+  ge('bTest').addEventListener('click', testSpk);
+  ge('bSpk').addEventListener('click', () => { ge('bSpk').className='sb on'; ge('bEar').className='sb'; toast('🔊 Haut-parleur'); });
+  ge('bEar').addEventListener('click',  () => { ge('bEar').className='sb on'; ge('bSpk').className='sb'; toast('📱 Oreillette'); });
+  ge('sMic').addEventListener('change', changeMic);
+  ge('sSpk').addEventListener('change', changeSpk);
+  ge('sCam').addEventListener('change', changeCam);
+  ge('bChangeName').addEventListener('click', changeName);
 
-  // Auto-login si nom mémorisé
-  // On attend 900ms pour laisser beforeinstallprompt se déclencher d'abord
-  const savedName = localStorage.getItem('nexus_name');
-  if (savedName) {
-    myName = savedName;
-    document.querySelectorAll('.nbtn').forEach(b => {
-      if (b.textContent === savedName) b.classList.add('active');
-    });
-    setTimeout(() => {
-      // Si l'install prompt est disponible, rester sur le lobby 3s pour le montrer
-      if (deferredPrompt) {
-        $('bInstall').style.display = 'block';
-        setTimeout(() => _doEnter(), 3000);
-      } else {
-        _doEnter();
-      }
-    }, 800);
-  }
+  // Push banner
+  ge('pbBtn').addEventListener('click', requestPush);
 
-  // PWA install SW
+  // Modal contact
+  ge('mContactCancel').addEventListener('click', () => ge('modalContact').classList.remove('on'));
+  ge('mContactAdd').addEventListener('click', confirmAddContact);
+  ge('modalContact').addEventListener('click', e => { if (e.target === ge('modalContact')) ge('modalContact').classList.remove('on'); });
+  ge('newContactName').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAddContact(); });
+
+  // Modal push bloqué
+  ge('mPushClose').addEventListener('click', () => ge('modalPushBlocked').classList.remove('on'));
+  ge('modalPushBlocked').addEventListener('click', e => { if (e.target === ge('modalPushBlocked')) ge('modalPushBlocked').classList.remove('on'); });
+
+  // Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(reg => {
-      log('SW registered');
-      // Écouter les messages du SW (accept/decline depuis notification)
+    navigator.serviceWorker.register('./sw.js').then(() => {
+      log('SW ok');
       navigator.serviceWorker.addEventListener('message', e => {
-        if (e.data.type === 'push_accept' && e.data.caller) acceptCallFrom(e.data.caller);
-        if (e.data.type === 'push_decline' && e.data.caller) send({type:'call_response', to:e.data.caller, accepted:false});
+        if (e.data.type === 'push_accept')  acceptCallFrom(e.data.caller);
+        if (e.data.type === 'push_decline') wsSend({type:'call_response', to:e.data.caller, accepted:false});
       });
     }).catch(e => log('SW err', e));
   }
+
+  // Auto-login
+  const saved = localStorage.getItem('nexus_name');
+  if (saved) {
+    document.querySelectorAll('.nbtn').forEach(b => { if (b.dataset.name === saved) b.classList.add('active'); });
+    // Laisser 1s pour que pwaPrompt soit capturé avant d'entrer
+    setTimeout(() => { if (pwaPrompt) ge('bInstall').style.display = 'block'; enterAs(saved); }, 900);
+  }
+
+  renderMembers();
 });
 
-// ── Lobby ─────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  LOBBY
+// ════════════════════════════════════════════════════════════
 function enterAs(name) {
   myName = name;
-  _doEnter();
-}
-
-async function enter() {
-  myName = 'Anonyme';
-  _doEnter();
-}
-
-async function _doEnter() {
-  localStorage.setItem('nexus_name', myName);
+  localStorage.setItem('nexus_name', name);
   myId = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-  $('hMyName').textContent = myName;
-  $('lobby').style.display = 'none';
-  $('app').classList.add('on');
+  ge('hMyName').textContent = name;
+  ge('lobby').style.display = 'none';
+  ge('app').classList.add('on');
   showCo('Connexion…');
   connectWS();
   fetchVapidKey();
 }
 
-// ── WebSocket ──────────────────────────────────────────────
+function changeName() {
+  wsSend({type:'leave'});
+  if (ws) { ws.onclose = null; ws.close(); }
+  ws = null; wsOk = false; online = {};
+  localStorage.removeItem('nexus_name');
+  ge('app').classList.remove('on');
+  ge('lobby').style.display = '';
+  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('active'));
+  renderMembers();
+}
+
+// ════════════════════════════════════════════════════════════
+//  WEBSOCKET
+// ════════════════════════════════════════════════════════════
 function connectWS() {
-  try { ws = new WebSocket(SIGNAL_SERVER); } catch(e) { hideCo(); return; }
+  try { ws = new WebSocket(SIGNAL); } catch { hideCo(); return; }
 
   ws.onopen = () => {
     wsOk = true;
-    send({ type:'register', name:myName, id:myId });
+    wsSend({type:'register', name:myName, id:myId});
     hideCo();
-    // Proposer push si pas encore fait
     setTimeout(checkPushBanner, 1500);
   };
 
@@ -536,189 +572,155 @@ function connectWS() {
     let m; try { m = JSON.parse(ev.data); } catch { return; }
     log('←', m.type);
 
-    switch(m.type) {
-      case 'members':
-        members = {};
-        m.members.forEach(mb => { members[mb.name] = mb; });
-        renderMembers(); break;
+    if (m.type === 'members') {
+      online = {};
+      m.members.forEach(x => { online[x.name] = x; });
+      renderMembers();
 
-      case 'member_joined':
-        members[m.name] = { name:m.name, id:m.id };
-        renderMembers();
-        toast('👋 ' + m.name + ' est arrivé'); break;
+    } else if (m.type === 'member_joined') {
+      online[m.name] = {name:m.name, id:m.id};
+      renderMembers(); toast('👋 ' + m.name + ' est arrivé');
 
-      case 'member_left':
-        delete members[m.name];
-        renderMembers();
-        toast('👋 ' + m.name + ' est parti');
-        if (callPeer === m.name) hangup(); break;
+    } else if (m.type === 'member_left') {
+      delete online[m.name];
+      renderMembers(); toast('👋 ' + m.name + ' est parti');
+      if (callPeer === m.name) hangup();
 
-      case 'incoming_call':
-        showIncomingCall(m.from); break;
+    } else if (m.type === 'contacts') {
+      CONTACTS = m.contacts;
+      renderMembers();
+      renderLobbyBtns();
 
-      case 'call_response':
-        stopRingtone();
-        if (m.accepted) startCall(m.from, true);
-        else { toast(m.from + ' a refusé l\'appel'); callPeer=null; } break;
+    } else if (m.type === 'incoming_call') {
+      showIncoming(m.from, m.withVideo);
 
-      case 'offer':  await handleOffer(m.from, m.payload);  break;
-      case 'answer': await handleAnswer(m.from, m.payload); break;
-      case 'ice':    await handleIce(m.from, m.payload);    break;
-      case 'hangup': onHangup(m.from); break;
+    } else if (m.type === 'call_response') {
+      stopRing();
+      if (m.accepted) startCall(m.from, true);
+      else { toast(m.from + ' a refusé'); callPeer = null; }
 
-      case 'chat':
-        appendMsg(m.from, m.text, m.ts, false); break;
-
-      case 'contacts':
-        CONTACTS = m.contacts;
-        renderMembers();
-        renderLobbyButtons();
-        break;
-    }
+    } else if (m.type === 'offer')  { await handleOffer(m.from, m.payload);
+    } else if (m.type === 'answer') { await handleAnswer(m.from, m.payload);
+    } else if (m.type === 'ice')    { await handleIce(m.from, m.payload);
+    } else if (m.type === 'hangup') { onHangup(m.from);
+    } else if (m.type === 'chat')   { appendMsg(m.from, m.text, m.ts, false); }
   };
 
-  ws.onclose = () => { wsOk=false; setTimeout(connectWS,3000); };
+  ws.onclose = () => { wsOk = false; setTimeout(connectWS, 3000); };
   ws.onerror = () => ws.close();
 }
 
-function send(obj) { if(ws && wsOk) ws.send(JSON.stringify(obj)); }
-function relay(to, rtype, payload) { send({type:'relay', to, relay_type:rtype, payload}); }
+function wsSend(obj) { if (ws && wsOk) ws.send(JSON.stringify(obj)); }
+function relay(to, type, payload) { wsSend({type:'relay', to, relay_type:type, payload}); }
 
-// ── Membres ───────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  CONTACTS
+// ════════════════════════════════════════════════════════════
 function renderMembers() {
-  const list = $('memberList');
-  const fixedContacts = ['Denis','Eugenia','Maryse','André'];
-  const rows = CONTACTS
-    .filter(n => n !== myName)
-    .map(n => {
-      const online = !!members[n];
-      const initials = n.charAt(0).toUpperCase();
-      const isFixed = fixedContacts.includes(n);
-      return `<div class="member">
-        <div class="mavt">${esc(initials)}</div>
-        <div class="minfo">
-          <div class="mname">${esc(n)}</div>
-          <div class="mstatus ${online ? 'online' : 'offline'}">${online ? 'En ligne' : 'Hors ligne'}</div>
-        </div>
-        <div class="mactions">
-          <div class="mact call ${online ? '' : 'disabled'}" data-action="call" data-name="${esc(n)}">📞</div>
-          <div class="mact ${online ? '' : 'disabled'}" data-action="video" data-name="${esc(n)}">📹</div>
-          ${!isFixed ? `<div class="mact" data-action="remove" data-name="${esc(n)}" title="Supprimer">✕</div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-  list.innerHTML = rows + `<button class="add-contact-btn" id="bAddContact">
-    <span style="font-size:18px">➕</span> Ajouter un contact
-  </button>`;
-  // Le listener est posé une seule fois dans DOMContentLoaded
+  const list = ge('memberList');
+  if (!list) return;
+  const rows = CONTACTS.filter(n => n !== myName).map(n => {
+    const on = !!online[n];
+    const fixed = FIXED.includes(n);
+    return `<div class="member">
+      <div class="mavt">${esc(n[0].toUpperCase())}</div>
+      <div class="minfo">
+        <div class="mname">${esc(n)}</div>
+        <div class="mstatus ${on?'':'off'}">${on?'En ligne':'Hors ligne'}</div>
+      </div>
+      <div class="mactions">
+        <div class="mact mcall ${on?'':'mdis'}" data-action="call" data-name="${esc(n)}">📞</div>
+        <div class="mact ${on?'':'mdis'}" data-action="video" data-name="${esc(n)}">📹</div>
+        ${!fixed?`<div class="mact" data-action="remove" data-name="${esc(n)}">✕</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  list.innerHTML = rows + `<button class="add-btn" id="bAddContact"><span style="font-size:18px">➕</span> Ajouter un contact</button>`;
 }
 
-// ── Gestion contacts ─────────────────────────────────────
-function openAddContact() {
-  $('newContactName').value = '';
-  $('modalBg').classList.add('on');
-  setTimeout(() => $('newContactName').focus(), 100);
+function renderLobbyBtns() {
+  const c = ge('nameBtns'); if (!c) return;
+  c.innerHTML = CONTACTS.map(n => `<button class="nbtn" data-name="${esc(n)}">${esc(n)}</button>`).join('');
 }
-function closeAddContact() {
-  $('modalBg').classList.remove('on');
+
+function openModalContact() {
+  ge('newContactName').value = '';
+  ge('modalContact').classList.add('on');
+  setTimeout(() => ge('newContactName').focus(), 150);
 }
+
 function confirmAddContact() {
-  const name = $('newContactName').value.trim();
+  const name = ge('newContactName').value.trim();
   if (!name) return;
   if (CONTACTS.includes(name)) { toast('Contact déjà existant'); return; }
-  send({ type:'add_contact', name });
-  closeAddContact();
+  wsSend({type:'add_contact', name});
+  ge('modalContact').classList.remove('on');
 }
+
 function removeContact(name) {
-  if (!confirm('Supprimer ' + name + ' des contacts ?')) return;
-  send({ type:'remove_contact', name });
-}
-function renderLobbyButtons() {
-  const container = document.getElementById('nameBtns');
-  if (!container) return;
-  container.innerHTML = CONTACTS.map(n =>
-    `<button class="nbtn" data-name="${esc(n)}">${esc(n)}</button>`
-  ).join('');
-  // Le listener est déjà posé sur nameBtns dans DOMContentLoaded (event delegation)
+  if (!confirm('Supprimer ' + name + ' ?')) return;
+  wsSend({type:'remove_contact', name});
 }
 
-// ── Changer de nom ───────────────────────────────────────
-function changeName() {
-  // Déconnecter proprement
-  send({ type: 'leave' });
-  ws?.close();
-  ws = null; wsOk = false;
-  localStorage.removeItem('nexus_name');
-  members = {};
-  // Retourner au lobby
-  $('app').classList.remove('on');
-  $('lobby').style.display = '';
-  // Retirer highlight actif
-  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('active'));
-}
+// ════════════════════════════════════════════════════════════
+//  APPEL SORTANT
+// ════════════════════════════════════════════════════════════
+function callMember(name)  { callVid = false; initCall(name); }
+function videoMember(name) { callVid = true;  initCall(name); }
 
-// ── Appel sortant ─────────────────────────────────────────
-let callWithVideo = true;
-
-function callMember(name) {
-  callWithVideo = false;
-  initiateCall(name);
-}
-function videoCallMember(name) {
-  callWithVideo = true;
-  initiateCall(name);
-}
-
-function initiateCall(name) {
-  if (callPeer) return toast('Vous êtes déjà en appel');
+function initCall(name) {
+  if (callPeer) return toast('Déjà en appel');
   callPeer = name;
-  playRingtone(true); // tonalité d'envoi
-  send({ type:'call_request', to:name });
+  playRing(true);
+  wsSend({type:'call_request', to:name, withVideo:callVid});
   toast('📞 Appel vers ' + name + '…');
 }
 
-// ── Appel entrant ─────────────────────────────────────────
-function showIncomingCall(from) {
+// ════════════════════════════════════════════════════════════
+//  APPEL ENTRANT
+// ════════════════════════════════════════════════════════════
+function showIncoming(from, withVideo) {
   callPeer = from;
-  $('ciName').textContent = from;
-  $('ciAvt').textContent = from.charAt(0).toUpperCase();
-  $('callIn').classList.add('on');
-  playRingtone(false);
+  callVid  = withVideo !== false;
+  ge('ciName').textContent = from;
+  ge('ciAvt').textContent  = from[0].toUpperCase();
+  ge('ciSub').textContent  = callVid ? 'Appel vidéo' : 'Appel audio';
+  ge('callIn').classList.add('on');
+  playRing(false);
 }
 
-function acceptCall() {
-  acceptCallFrom(callPeer);
-}
+function acceptCall() { acceptCallFrom(callPeer); }
 
 function acceptCallFrom(from) {
   callPeer = from;
-  $('callIn').classList.remove('on');
-  stopRingtone();
-  send({ type:'call_response', to:from, accepted:true });
+  ge('callIn').classList.remove('on');
+  stopRing();
+  wsSend({type:'call_response', to:from, accepted:true});
   startCall(from, false);
 }
 
 function declineCall() {
-  send({ type:'call_response', to:callPeer, accepted:false });
-  $('callIn').classList.remove('on');
-  stopRingtone();
+  wsSend({type:'call_response', to:callPeer, accepted:false});
+  ge('callIn').classList.remove('on');
+  stopRing();
   callPeer = null;
 }
 
-// ── Démarrer l'appel ──────────────────────────────────────
-async function startCall(peer, imInitiator) {
+// ════════════════════════════════════════════════════════════
+//  WEBRTC
+// ════════════════════════════════════════════════════════════
+async function startCall(peer, iAmCaller) {
   showCo('Connexion à ' + peer + '…');
-  const withVideo = callWithVideo || !imInitiator;
-  ls = await getMedia(withVideo);
+  const withV = callVid || !iAmCaller;
+  ls = await getMedia(withV);
   hideCo();
-  $('callView').classList.add('on');
-  // Montrer le bouton "Passer en vidéo" si appel audio uniquement
-  $('cvUpgrade').style.display = withVideo ? 'none' : 'flex';
+  ge('callView').classList.add('on');
+  ge('cvUpgrade').style.display = withV ? 'none' : 'flex';
   renderLocalTile();
   setupPc(peer);
-  if (imInitiator) {
-    const dc = pc.createDataChannel('meta');
-    const offer = await pc.createOffer({ offerToReceiveAudio:true, offerToReceiveVideo:true });
+  if (iAmCaller) {
+    pc.createDataChannel('meta');
+    const offer = await pc.createOffer({offerToReceiveAudio:true, offerToReceiveVideo:true});
     await pc.setLocalDescription(offer);
     relay(peer, 'offer', pc.localDescription.toJSON());
   }
@@ -726,428 +728,288 @@ async function startCall(peer, imInitiator) {
 }
 
 function setupPc(peer) {
-  pc = new RTCPeerConnection(ICE_CFG);
+  pc = new RTCPeerConnection(ICE);
   ls.getTracks().forEach(t => pc.addTrack(t, ls));
-
-  pc.onicecandidate = e => { if(e.candidate) relay(peer, 'ice', e.candidate.toJSON()); };
-
+  pc.onicecandidate = e => { if (e.candidate) relay(peer, 'ice', e.candidate.toJSON()); };
   pc.ontrack = e => {
-    const stream = e.streams[0]; if(!stream) return;
-    if(pc._stream===stream) return;
-    pc._stream = stream;
-    renderRemoteTile(peer, stream);
-    hideCo();
+    const s = e.streams[0]; if (!s || pc._rs === s) return;
+    pc._rs = s; renderRemoteTile(peer, s); hideCo();
   };
-
   pc.onconnectionstatechange = () => {
-    log('PC', pc.connectionState);
-    if(['disconnected','failed','closed'].includes(pc.connectionState)) onHangup(peer);
+    if (['disconnected','failed','closed'].includes(pc.connectionState)) onHangup(peer);
   };
 }
 
 async function handleOffer(from, sdp) {
-  callWithVideo = true; // si on reçoit une offre, on suppose vidéo
   if (!ls) ls = await getMedia(true);
-  if (!$('callView').classList.contains('on')) {
-    $('callView').classList.add('on');
-    renderLocalTile();
+  if (!ge('callView').classList.contains('on')) {
+    ge('callView').classList.add('on'); renderLocalTile();
   }
+  if (pc) { pc.close(); pc = null; }
   setupPc(from);
   await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-  await flushIce(pc);
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
+  await flushIce();
+  const ans = await pc.createAnswer();
+  await pc.setLocalDescription(ans);
   relay(from, 'answer', pc.localDescription.toJSON());
-  hideCo();
-  startTimer();
+  hideCo(); startTimer();
 }
 
 async function handleAnswer(from, sdp) {
-  if(!pc || pc.signalingState!=='have-local-offer') return;
-  await pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(e=>log('ans',e));
-  await flushIce(pc);
+  if (!pc || pc.signalingState !== 'have-local-offer') return;
+  await pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(()=>{});
+  await flushIce();
 }
 
 async function handleIce(from, cand) {
-  if(!pc) return;
-  if(!pc.remoteDescription){ pc._iceBuf=pc._iceBuf||[]; pc._iceBuf.push(cand); return; }
+  if (!pc) return;
+  if (!pc.remoteDescription) { pc._ib = pc._ib||[]; pc._ib.push(cand); return; }
   await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
 }
 
-async function flushIce(p) {
-  for(const c of (p._iceBuf||[])) await p.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
-  p._iceBuf=[];
+async function flushIce() {
+  for (const c of (pc._ib||[])) await pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+  pc._ib = [];
 }
 
 function hangup() {
-  if(callPeer) send({type:'hangup', to:callPeer});
+  if (callPeer) wsSend({type:'hangup', to:callPeer});
   cleanupCall();
 }
 
 function onHangup(from) {
-  if(from !== callPeer) return;
+  if (from !== callPeer) return;
   toast(from + ' a raccroché');
   cleanupCall();
 }
 
 function cleanupCall() {
-  pc?.close(); pc=null;
-  ls?.getTracks().forEach(t=>t.stop()); ls=null;
-  callPeer=null;
-  stopRingtone();
-  stopTimer();
-  $('callView').classList.remove('on');
-  $('callIn').classList.remove('on');
-  $('cvGrid').innerHTML='';
-  micOn=true; camOn=true;
-  $('cvMic').className='cctrl'; $('cvMicIc').textContent='🎙️'; $('cvMicLb').textContent='Micro';
-  $('cvCam').className='cctrl'; $('cvCamIc').textContent='📹'; $('cvCamLb').textContent='Caméra';
-  $('cvUpgrade').style.display='none';
+  pc?.close(); pc = null;
+  ls?.getTracks().forEach(t => t.stop()); ls = null;
+  callPeer = null;
+  stopRing(); stopTimer();
+  ge('callView').classList.remove('on');
+  ge('callIn').classList.remove('on');
+  ge('cvGrid').innerHTML = '';
+  ge('cvUpgrade').style.display = 'none';
+  micOn = true; camOn = true;
+  ge('cvMic').className = 'cctrl'; ge('cvMicLb').textContent = 'Micro';
+  ge('cvCam').className = 'cctrl'; ge('cvCamLb').textContent = 'Caméra';
 }
 
-// ── Rendu appel ───────────────────────────────────────────
+// ── Rendu ─────────────────────────────────────────────────
 function renderLocalTile() {
-  const g=$('cvGrid');
-  let t=document.getElementById('cv-local');
-  if(!t){ t=document.createElement('div'); t.className='vt'; t.id='cv-local'; g.appendChild(t); }
-  t.innerHTML='';
-  const v=mkVid(ls, true);
-  const tb=document.createElement('div'); tb.className='vtb';
-  tb.innerHTML=`<div class="vtn"><span>${esc(myName)}</span><span class="ytag">VOUS</span></div>`;
-  t.appendChild(v); t.appendChild(tb);
-  updateCvGrid();
+  const g = ge('cvGrid');
+  let t = document.getElementById('cv-local');
+  if (!t) { t = document.createElement('div'); t.className='vt'; t.id='cv-local'; g.appendChild(t); }
+  t.innerHTML = '';
+  const v = mkVid(ls, true);
+  const tb = document.createElement('div'); tb.className='vtb';
+  tb.innerHTML = `<div class="vtn"><span>${esc(myName)}</span><span class="ytag">VOUS</span></div>`;
+  t.appendChild(v); t.appendChild(tb); updGrid();
 }
 
 function renderRemoteTile(name, stream) {
-  const g=$('cvGrid');
-  let t=document.getElementById('cv-remote');
-  if(!t){ t=document.createElement('div'); t.className='vt'; t.id='cv-remote'; g.appendChild(t); }
-  t.innerHTML='';
-  const v=mkVid(stream, false);
-  const tb=document.createElement('div'); tb.className='vtb';
-  tb.innerHTML=`<div class="vtn"><span>${esc(name)}</span></div>`;
+  const g = ge('cvGrid');
+  let t = document.getElementById('cv-remote');
+  if (!t) { t = document.createElement('div'); t.className='vt'; t.id='cv-remote'; g.appendChild(t); }
+  t.innerHTML = '';
+  const v = mkVid(stream, false);
+  const tb = document.createElement('div'); tb.className='vtb';
+  tb.innerHTML = `<div class="vtn"><span>${esc(name)}</span></div>`;
   t.appendChild(v); t.appendChild(tb);
-  applySpk(v);
-  updateCvGrid();
-  v.play().catch(()=>{ const b=document.createElement('button');
-    b.style.cssText='position:absolute;inset:0;width:100%;height:100%;background:rgba(0,212,255,.1);border:none;color:var(--a);font-size:14px;cursor:pointer;z-index:5';
-    b.textContent='▶ Activer l\'audio'; b.onclick=()=>{v.play();b.remove();}; t.appendChild(b); });
+  if (spkId && v.setSinkId) v.setSinkId(spkId).catch(()=>{});
+  updGrid();
+  v.play().catch(() => {
+    const b = document.createElement('button');
+    b.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;background:rgba(0,212,255,.1);border:none;color:var(--a);font-size:14px;cursor:pointer;z-index:5';
+    b.textContent = '▶ Activer l\'audio';
+    b.onclick = () => { v.play(); b.remove(); };
+    t.appendChild(b);
+  });
 }
 
 function mkVid(stream, muted) {
-  const v=document.createElement('video');
-  v.autoplay=true; v.playsInline=true; v.muted=muted; v.srcObject=stream; return v;
+  const v = document.createElement('video');
+  v.autoplay = true; v.playsInline = true; v.muted = muted; v.srcObject = stream; return v;
 }
-function updateCvGrid() {
-  const g=$('cvGrid'), n=g.querySelectorAll('.vt').length;
-  g.className='cv-grid '+(n>=2?'duo':'solo');
+function updGrid() {
+  const g = ge('cvGrid'), n = g.querySelectorAll('.vt').length;
+  g.className = 'cv-grid ' + (n >= 2 ? 'duo' : 'solo');
 }
 
-// ── Contrôles appel ───────────────────────────────────────
+// ── Contrôles ─────────────────────────────────────────────
 function toggleMic() {
-  micOn=!micOn;
-  ls?.getAudioTracks().forEach(t=>t.enabled=micOn);
-  $('cvMic').className='cctrl'+(micOn?'':' off');
-  $('cvMicIc').textContent=micOn?'🎙️':'🔇';
-  $('cvMicLb').textContent=micOn?'Micro':'Muet';
+  micOn = !micOn;
+  ls?.getAudioTracks().forEach(t => t.enabled = micOn);
+  ge('cvMic').className = 'cctrl' + (micOn ? '' : ' off');
+  ge('cvMicLb').textContent = micOn ? 'Micro' : 'Muet';
 }
 function toggleCam() {
-  camOn=!camOn;
-  ls?.getVideoTracks().forEach(t=>t.enabled=camOn);
-  $('cvCam').className='cctrl'+(camOn?'':' off');
-  $('cvCamIc').textContent=camOn?'📹':'📷';
-  $('cvCamLb').textContent=camOn?'Caméra':'Off';
-  const lv=document.querySelector('#cv-local video');
-  if(lv) lv.style.display=camOn?'block':'none';
+  camOn = !camOn;
+  ls?.getVideoTracks().forEach(t => t.enabled = camOn);
+  ge('cvCam').className = 'cctrl' + (camOn ? '' : ' off');
+  ge('cvCamLb').textContent = camOn ? 'Caméra' : 'Off';
+  const lv = document.querySelector('#cv-local video');
+  if (lv) lv.style.display = camOn ? 'block' : 'none';
 }
 
-// ── Passer en vidéo depuis un appel audio ────────────────
 async function upgradeToVideo() {
   if (!pc || !callPeer) return;
-  $('cvUpgrade').style.display = 'none';
-  callWithVideo = true;
+  ge('cvUpgrade').style.display = 'none';
+  callVid = true;
   try {
-    // Obtenir la caméra
-    const vs = await navigator.mediaDevices.getUserMedia({
-      video: { width:{ideal:isMob?640:1280}, height:{ideal:isMob?480:720} },
-      audio: false,
-    });
-    const vt = vs.getVideoTracks()[0];
-    ls.addTrack(vt);
-    // Ajouter la piste vidéo à la connexion existante
-    pc.addTrack(vt, ls);
-    // Renégocier
+    const s = await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480}}, audio:false});
+    const t = s.getVideoTracks()[0];
+    ls.addTrack(t); pc.addTrack(t, ls);
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     relay(callPeer, 'offer', pc.localDescription.toJSON());
-    // Mettre à jour l'affichage local
-    camOn = true;
-    $('cvCam').className = 'cctrl';
-    $('cvCamIc').textContent = '📹';
-    $('cvCamLb').textContent = 'Caméra';
-    renderLocalTile();
-    toast('📹 Vidéo activée');
-  } catch(e) {
-    toast('Impossible d'activer la caméra');
-    $('cvUpgrade').style.display = 'flex';
-  }
+    camOn = true; ge('cvCam').className='cctrl'; ge('cvCamLb').textContent='Caméra';
+    renderLocalTile(); toast('📹 Vidéo activée');
+  } catch { toast('Impossible d\'activer la caméra'); ge('cvUpgrade').style.display='flex'; }
 }
 
 // ── Média ─────────────────────────────────────────────────
-async function getMedia(withVideo=true) {
+async function getMedia(withVideo) {
   const tries = withVideo ? [
-    { video:{width:{ideal:isMob?640:1280},height:{ideal:isMob?480:720}}, audio:{echoCancellation:true,noiseSuppression:true} },
-    { video:true, audio:true },
-    { video:false, audio:true },
-  ] : [{ video:false, audio:{echoCancellation:true,noiseSuppression:true} }];
-  for(const c of tries) { try{ return await navigator.mediaDevices.getUserMedia(c); }catch(e){} }
+    {video:{width:{ideal:isMob?640:1280},height:{ideal:isMob?480:720}}, audio:{echoCancellation:true,noiseSuppression:true}},
+    {video:true, audio:true},
+    {video:false, audio:true},
+  ] : [{audio:{echoCancellation:true,noiseSuppression:true}, video:false}];
+  for (const c of tries) { try { return await navigator.mediaDevices.getUserMedia(c); } catch {} }
   return new MediaStream();
 }
 
-// ── Audio output ──────────────────────────────────────────
-function applySpk(v) { if(spkId && typeof v.setSinkId==='function') v.setSinkId(spkId).catch(()=>{}); }
-function setAudio(mode) {
-  $('bSpk').className='sb'+(mode==='speaker'?' on':'');
-  $('bEar').className='sb'+(mode==='earpiece'?' on':'');
-  toast(mode==='speaker'?'🔊 Haut-parleur':'📱 Oreillette');
-}
-
-// ── Sonnerie ──────────────────────────────────────────────
-function playRingtone(outgoing=false) {
-  stopRingtone();
-  try {
-    const ctx = new(window.AudioContext||window.webkitAudioContext)();
-    let i = 0;
-    const pattern = outgoing
-      ? () => { // bip régulier sortant
-          const o=ctx.createOscillator(), g=ctx.createGain();
-          o.frequency.value=440; g.gain.setValueAtTime(.15,ctx.currentTime);
-          g.gain.setValueAtTime(0,ctx.currentTime+.4);
-          o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.4);
-        }
-      : () => { // sonnerie entrante (deux bips)
-          [0,.18].forEach(d => {
-            const o=ctx.createOscillator(), g=ctx.createGain();
-            o.frequency.value=880; g.gain.setValueAtTime(0,ctx.currentTime+d);
-            g.gain.linearRampToValueAtTime(.2,ctx.currentTime+d+.05);
-            g.gain.setValueAtTime(0,ctx.currentTime+d+.15);
-            o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.18);
-          });
-        };
-    pattern();
-    ringtone = setInterval(pattern, outgoing?1200:800);
-  } catch(e) {}
-}
-function stopRingtone() { clearInterval(ringtone); ringtone=null; }
-
 // ── Timer ─────────────────────────────────────────────────
 function startTimer() {
-  timerSec=0; stopTimer();
-  timerInt=setInterval(()=>{
-    timerSec++;
-    const m=String(~~(timerSec/60)).padStart(2,'0'), s=String(timerSec%60).padStart(2,'0');
-    $('cvTimer').textContent=m+':'+s;
-  },1000);
+  timerS = 0; stopTimer();
+  timerI = setInterval(() => {
+    timerS++;
+    ge('cvTimer').textContent = String(~~(timerS/60)).padStart(2,'0')+':'+String(timerS%60).padStart(2,'0');
+  }, 1000);
 }
-function stopTimer() { clearInterval(timerInt); $('cvTimer').textContent='00:00'; }
+function stopTimer() { clearInterval(timerI); ge('cvTimer').textContent = '00:00'; }
+
+// ── Sonnerie ──────────────────────────────────────────────
+function playRing(outgoing) {
+  stopRing();
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const pat = outgoing
+      ? () => { const o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.value=440; g.gain.setValueAtTime(.15,ctx.currentTime); g.gain.setValueAtTime(0,ctx.currentTime+.4); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.4); }
+      : () => { [0,.2].forEach(d => { const o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.value=880; g.gain.setValueAtTime(0,ctx.currentTime+d); g.gain.linearRampToValueAtTime(.2,ctx.currentTime+d+.05); g.gain.setValueAtTime(0,ctx.currentTime+d+.18); o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.2); }); };
+    pat();
+    ringI = setInterval(pat, outgoing ? 1200 : 900);
+  } catch {}
+}
+function stopRing() { clearInterval(ringI); ringI = null; }
 
 // ── Chat ──────────────────────────────────────────────────
 function sendChat() {
-  const text=$('chatIn').value.trim(); if(!text) return;
-  $('chatIn').value='';
-  send({ type:'chat', text });
-  appendMsg(myName, text, Date.now(), true);
+  const t = ge('chatIn').value.trim(); if (!t) return;
+  ge('chatIn').value = '';
+  wsSend({type:'chat', text:t});
+  appendMsg(myName, t, Date.now(), true);
+}
+function appendMsg(from, text, ts, me) {
+  const el = ge('msgs');
+  el.querySelector('[style]')?.remove();
+  const d = document.createElement('div');
+  d.className = 'msg ' + (me?'me':'them');
+  const time = new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  d.innerHTML = (!me ? `<div class="msender">${esc(from)}</div>` : '')
+    + `<div>${esc(text)}</div><div class="mtime">${time}</div>`;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
 }
 
-function appendMsg(from, text, ts, isMe) {
-  const el=$('msgs');
-  el.querySelector('.empty')?.remove();
-  const d=document.createElement('div');
-  d.className='msg '+(isMe?'me':'them');
-  const time=new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  d.innerHTML=(!isMe?`<div class="msender">${esc(from)}</div>`:'')
-    +`<div>${esc(text)}</div><div class="mtime">${time}</div>`;
-  el.appendChild(d);
-  el.scrollTop=el.scrollHeight;
-  // Basculer sur l'onglet chat si message entrant
-  if(!isMe) {
-    const chatTab=document.querySelector('[data-tab="chat"]');
-    if(!chatTab.classList.contains('on')) chatTab.style.boxShadow='0 0 0 2px var(--a)';
-  }
-}
-
-// ── Push notifications ────────────────────────────────────
+// ── Push ──────────────────────────────────────────────────
 async function fetchVapidKey() {
   try {
-    const base = SIGNAL_SERVER.replace('wss://','https://').replace('ws://','http://');
-    const r = await fetch(base+'/vapid-public-key');
+    const r = await fetch(SIGNAL.replace('wss://','https://').replace('ws://','http://') + '/vapid-public-key');
     vapidKey = await r.text();
-  } catch(e) { log('vapid key err',e); }
+  } catch {}
 }
 
 function checkPushBanner() {
-  if(!('Notification' in window) || !('PushManager' in window)) return;
-  if(Notification.permission === 'granted') { subscribePush(); return; }
-  // Montrer la bannière que la permission soit 'default' ou 'denied'
-  // (si denied, requestPush() expliquera comment débloquer)
-  $('pushBanner').style.display = 'block';
-  if(Notification.permission === 'denied') {
-    $('pb-btn', $('pushBanner')) // handled in requestPush
-    const btn = document.getElementById('pbBtn');
-    if(btn) btn.textContent = 'Comment activer ?';
-  }
+  if (!('Notification' in window) || !('PushManager' in window)) return;
+  if (Notification.permission === 'granted') { subscribePush(); return; }
+  ge('pushBanner').style.display = 'block';
+  if (Notification.permission === 'denied') ge('pbBtn').textContent = 'Comment activer ?';
 }
 
 async function requestPush() {
-  if(!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return showPushUnsupported();
-  }
-  // Si déjà bloqué, montrer les instructions manuelles
-  if(Notification.permission === 'denied') {
-    showPushBlockedInstructions();
-    return;
-  }
-  // Demander la permission — affiche le vrai popup système
+  if (!('PushManager' in window)) return toast('Non supporté sur ce navigateur');
+  if (Notification.permission === 'denied') { showPushBlocked(); return; }
   const perm = await Notification.requestPermission();
-  if(perm === 'granted') {
-    $('pushBanner').style.display = 'none';
-    subscribePush();
-  } else if(perm === 'denied') {
-    // L'utilisateur vient de refuser → expliquer comment changer
-    showPushBlockedInstructions();
-  }
+  if (perm === 'granted') { ge('pushBanner').style.display='none'; subscribePush(); }
+  else showPushBlocked();
 }
 
-function showPushUnsupported() {
-  toast('Notifications non supportées sur ce navigateur');
-}
-
-function showPushBlockedInstructions() {
-  const instr = $('pushInstructions');
-  if (isIOS) {
-    instr.innerHTML = `
-      <b>Sur iPhone / iPad :</b><br>
-      Réglages → Notifications → Safari<br>
-      → Activez les notifications pour ce site<br><br>
-      <i style="color:var(--m)">Ou : Réglages → Safari → Notifications avancées</i>
-    `;
-  } else if (/Android/i.test(navigator.userAgent)) {
-    instr.innerHTML = `
-      <b>Sur Android (Chrome) :</b><br>
-      1. Appuyez sur ⋮ (menu Chrome) → Paramètres<br>
-      2. Confidentialité → Paramètres du site<br>
-      3. Notifications → <b>denisgorce.github.io</b><br>
-      4. Autorisez les notifications
-    `;
-  } else {
-    instr.innerHTML = `
-      <b>Sur Chrome / Edge :</b><br>
-      Cliquez sur 🔒 dans la barre d'adresse<br>
-      → Paramètres du site → Notifications → Autoriser<br><br>
-      <b>Sur Firefox :</b><br>
-      Cliquez sur 🔒 → Plus d'informations<br>
-      → Permissions → Recevoir des notifications → Autoriser
-    `;
-  }
-  $('pushBlockedModal').classList.add('on');
+function showPushBlocked() {
+  const el = ge('pushInstr');
+  if (isIOS) el.innerHTML = '<b>Sur iPhone/iPad :</b><br>Réglages → Notifications → Safari<br>→ Autorisez ce site';
+  else if (/Android/i.test(navigator.userAgent))
+    el.innerHTML = '<b>Sur Android Chrome :</b><br>⋮ Menu → Paramètres → Confidentialité<br>→ Paramètres du site → Notifications<br>→ <b>denisgorce.github.io</b> → Autoriser';
+  else
+    el.innerHTML = '<b>Chrome/Edge :</b> Clic sur 🔒 → Paramètres du site → Notifications → Autoriser<br><br><b>Firefox :</b> Clic sur 🔒 → Plus d\'infos → Permissions → Autoriser';
+  ge('modalPushBlocked').classList.add('on');
 }
 
 async function subscribePush() {
   try {
-    if(!vapidKey) await fetchVapidKey();
-    if(!vapidKey) return;
+    if (!vapidKey) await fetchVapidKey();
+    if (!vapidKey) return;
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      applicationServerKey: b64toUint8(vapidKey),
     });
-    send({ type:'push_subscribe', subscription: sub.toJSON() });
+    wsSend({type:'push_subscribe', subscription:sub.toJSON()});
     toast('🔔 Notifications activées ✓');
-  } catch(e) { log('push sub err',e); }
+  } catch(e) { log('push err', e); }
 }
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4-base64String.length%4)%4);
-  const base64 = (base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
-  const raw = window.atob(base64);
-  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+function b64toUint8(b64) {
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
 }
 
 // ── Appareils ─────────────────────────────────────────────
 async function populateDev() {
   try {
-    const devs=await navigator.mediaDevices.enumerateDevices();
-    const mics=devs.filter(d=>d.kind==='audioinput');
-    const spks=devs.filter(d=>d.kind==='audiooutput');
-    const cams=devs.filter(d=>d.kind==='videoinput');
-    const note=$('spkNote'), sinkOk=typeof document.createElement('video').setSinkId==='function';
-    $('sMic').innerHTML=mics.length?mics.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Micro '+(i+1))}</option>`).join(''):'<option>Micro par défaut</option>';
-    $('sCam').innerHTML=cams.length?cams.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Caméra '+(i+1))}</option>`).join(''):'<option>Caméra par défaut</option>';
-    if(isIOS){ $('sSpk').innerHTML='<option>Géré par iOS</option>'; $('sSpk').disabled=true; note.textContent='Sur iPhone/iPad, utilisez les boutons ci-dessous.'; note.style.display='block'; $('iosBtns').style.display='flex'; }
-    else if(sinkOk&&spks.length){ $('sSpk').innerHTML=spks.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'HP '+(i+1))}</option>`).join(''); note.style.display='none'; }
-    else{ $('sSpk').innerHTML='<option>Sortie par défaut</option>'; $('sSpk').disabled=true; note.textContent='Sélection HP disponible sur Chrome/Edge uniquement.'; note.style.display='block'; }
-  } catch(e){}
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const mics = devs.filter(d=>d.kind==='audioinput');
+    const spks = devs.filter(d=>d.kind==='audiooutput');
+    const cams = devs.filter(d=>d.kind==='videoinput');
+    const sinkOk = typeof document.createElement('video').setSinkId === 'function';
+    ge('sMic').innerHTML = mics.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Micro '+(i+1))}</option>`).join('') || '<option>Micro par défaut</option>';
+    ge('sCam').innerHTML = cams.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'Caméra '+(i+1))}</option>`).join('') || '<option>Caméra par défaut</option>';
+    if (isIOS) { ge('sSpk').innerHTML='<option>Géré par iOS</option>'; ge('sSpk').disabled=true; ge('spkNote').textContent='Sur iOS, utilisez les boutons ci-dessous.'; ge('spkNote').style.display='block'; ge('iosBtns').style.display='flex'; }
+    else if (sinkOk && spks.length) { ge('sSpk').innerHTML=spks.map((d,i)=>`<option value="${d.deviceId}">${esc(d.label||'HP '+(i+1))}</option>`).join(''); }
+    else { ge('sSpk').innerHTML='<option>Sortie par défaut</option>'; ge('sSpk').disabled=true; ge('spkNote').textContent='Sélection HP disponible sur Chrome/Edge uniquement.'; ge('spkNote').style.display='block'; }
+  } catch {}
 }
-
 async function changeMic() {
-  const id=$('sMic').value;
-  try{
-    const ns=await navigator.mediaDevices.getUserMedia({audio:id?{deviceId:{exact:id},echoCancellation:true,noiseSuppression:true}:true,video:false});
-    const nt=ns.getAudioTracks()[0];
-    ls?.getAudioTracks().forEach(t=>{ls.removeTrack(t);t.stop();});
-    ls?.addTrack(nt); nt.enabled=micOn;
-    pc?.getSenders().find(s=>s.track?.kind==='audio')?.replaceTrack(nt);
-    toast('Microphone changé ✓');
-  }catch(e){toast('Erreur: '+e.message);}
+  try { const s=await navigator.mediaDevices.getUserMedia({audio:{deviceId:{exact:ge('sMic').value}},video:false}); const t=s.getAudioTracks()[0]; ls?.getAudioTracks().forEach(x=>{ls.removeTrack(x);x.stop();}); ls?.addTrack(t); t.enabled=micOn; pc?.getSenders().find(s=>s.track?.kind==='audio')?.replaceTrack(t); toast('Micro changé ✓'); } catch(e){toast('Erreur: '+e.message);}
 }
-function changeSpk() { spkId=$('sSpk').value; document.querySelectorAll('#callView video:not([muted])').forEach(applySpk); toast('Sortie changée ✓'); }
+function changeSpk() { spkId=ge('sSpk').value; document.querySelectorAll('#callView video:not([muted])').forEach(v=>{if(v.setSinkId)v.setSinkId(spkId).catch(()=>{})}); toast('Sortie changée ✓'); }
 async function changeCam() {
-  const id=$('sCam').value;
-  try{
-    const ns=await navigator.mediaDevices.getUserMedia({video:id?{deviceId:{exact:id}}:true,audio:false});
-    const nt=ns.getVideoTracks()[0];
-    ls?.getVideoTracks().forEach(t=>{ls.removeTrack(t);t.stop();});
-    ls?.addTrack(nt); nt.enabled=camOn;
-    const lv=document.querySelector('#cv-local video'); if(lv) lv.srcObject=ls;
-    pc?.getSenders().find(s=>s.track?.kind==='video')?.replaceTrack(nt);
-    toast('Caméra changée ✓');
-  }catch(e){toast('Erreur: '+e.message);}
+  try { const s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:ge('sCam').value}},audio:false}); const t=s.getVideoTracks()[0]; ls?.getVideoTracks().forEach(x=>{ls.removeTrack(x);x.stop();}); ls?.addTrack(t); t.enabled=camOn; const lv=document.querySelector('#cv-local video'); if(lv)lv.srcObject=ls; pc?.getSenders().find(s=>s.track?.kind==='video')?.replaceTrack(t); toast('Caméra changée ✓'); } catch(e){toast('Erreur: '+e.message);}
 }
-function testSpk() {
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.frequency.value=440; g.gain.setValueAtTime(.2,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);
-    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.5);
-    toast('🔊 Bip test');
-  }catch(e){toast('Non supporté');}
-}
-function openSet(){ populateDev(); $('sp').classList.add('on'); $('olay').classList.add('on'); }
-function closeSet(){ $('sp').classList.remove('on'); $('olay').classList.remove('on'); }
+function testSpk() { try { const ctx=new(window.AudioContext||window.webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.value=440; g.gain.setValueAtTime(.2,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.5); toast('🔊 Bip'); } catch{toast('Non supporté');} }
+function openSet() { populateDev(); ge('sp').classList.add('on'); ge('olay').classList.add('on'); }
+function closeSet() { ge('sp').classList.remove('on'); ge('olay').classList.remove('on'); }
 
-// ── Utilitaires ───────────────────────────────────────────
-function copyLink() {
-  const url=location.href;
-  if(navigator.share&&isMob) navigator.share({title:'NEXUS',url}).catch(()=>doCopy(url));
-  else doCopy(url);
-}
-function doCopy(url) {
-  navigator.clipboard?.writeText(url).then(()=>toast('Lien copié ✓')).catch(()=>{
-    const ta=document.createElement('textarea'); ta.value=url;
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-    toast('Lien copié ✓');
-  });
-}
+// ── Toast / Spinner ───────────────────────────────────────
+function toast(msg) { const el=ge('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),3000); }
+function showCo(msg) { ge('coTxt').textContent=msg; ge('co').classList.add('on'); }
+function hideCo()    { ge('co').classList.remove('on'); }
 
-let toastT;
-function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),3000); }
-function showCo(msg){ $('coTxt').textContent=msg; $('co').classList.add('on'); }
-function hideCo(){ $('co').classList.remove('on'); }
-
-window.addEventListener('beforeunload',()=>{
-  send({type:'leave'});
-  ls?.getTracks().forEach(t=>t.stop());
+window.addEventListener('beforeunload', () => {
+  wsSend({type:'leave'});
+  ls?.getTracks().forEach(t => t.stop());
 });
 </script>
 </body>
