@@ -73,6 +73,11 @@ input[type=text]::placeholder{color:var(--m)}
 .minfo{flex:1;min-width:0}
 .mname{font-size:12px;font-weight:500;color:var(--t)}
 .mstatus{font-size:9px;color:var(--g);margin-top:2px;display:flex;align-items:center;gap:4px}
+
+.mstatus.offline{color:var(--m)}
+.mstatus.offline::before{background:var(--m)}
+.mact.disabled{opacity:.25;cursor:not-allowed}
+.mact.disabled:hover{border-color:var(--bd);background:var(--s2)}
 .mstatus::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0}
 .mactions{display:flex;gap:6px;flex-shrink:0}
 .mact{width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .15s}
@@ -204,9 +209,7 @@ select option{background:#101820}
       <span class="pbi">🔔</span>
       <span>Activer les notifications pour recevoir les appels même écran éteint</span>
     </div>
-    <div class="cl" id="memberList">
-      <div class="empty">En attente de connexions…<br><br>Partagez ce lien :<br><b id="shareUrl" style="color:var(--a);word-break:break-all;cursor:pointer"></b></div>
-    </div>
+    <div class="cl" id="memberList"></div>
   </div>
 
   <!-- VUE CHAT -->
@@ -271,6 +274,7 @@ select option{background:#101820}
 // ═══════════════════════════════════════════════════════════
 
 const SIGNAL_SERVER = 'wss://mycall-utj5.onrender.com';
+const CONTACTS = ['Eugenia', 'Maryse', 'André']; // liste fixe des membres
 
 const ICE_CFG = { iceServers: [
   { urls:'stun:stun.l.google.com:19302' },
@@ -361,8 +365,7 @@ window.addEventListener('DOMContentLoaded', () => {
   $('sSpk').onchange    = changeSpk;
   $('sCam').onchange    = changeCam;
   $('pushBanner').onclick = requestPush;
-  $('shareUrl').onclick   = copyLink;
-  $('shareUrl').textContent = location.href;
+  // share URL shown in push banner area
 
   // PWA install SW
   if ('serviceWorker' in navigator) {
@@ -450,26 +453,23 @@ function relay(to, rtype, payload) { send({type:'relay', to, relay_type:rtype, p
 // ── Membres ───────────────────────────────────────────────
 function renderMembers() {
   const list = $('memberList');
-  const names = Object.keys(members);
-  if (!names.length) {
-    list.innerHTML = `<div class="empty">En attente de connexions…<br><br>Partagez ce lien :<br><b id="shareUrl" style="color:var(--a);word-break:break-all;cursor:pointer">${esc(location.href)}</b></div>`;
-    document.getElementById('shareUrl').onclick = copyLink;
-    return;
-  }
-  list.innerHTML = names.map(n => {
-    const initials = n.charAt(0).toUpperCase();
-    return `<div class="member">
-      <div class="mavt">${esc(initials)}</div>
-      <div class="minfo">
-        <div class="mname">${esc(n)}</div>
-        <div class="mstatus">En ligne</div>
-      </div>
-      <div class="mactions">
-        <div class="mact call" onclick="callMember('${esc(n)}')">📞</div>
-        <div class="mact" onclick="videoCallMember('${esc(n)}')">📹</div>
-      </div>
-    </div>`;
-  }).join('');
+  list.innerHTML = CONTACTS
+    .filter(n => n !== myName)
+    .map(n => {
+      const online = !!members[n];
+      const initials = n.charAt(0).toUpperCase();
+      return `<div class="member">
+        <div class="mavt">${esc(initials)}</div>
+        <div class="minfo">
+          <div class="mname">${esc(n)}</div>
+          <div class="mstatus ${online ? 'online' : 'offline'}">${online ? 'En ligne' : 'Hors ligne'}</div>
+        </div>
+        <div class="mactions">
+          <div class="mact call ${online ? '' : 'disabled'}" ${online ? `onclick="callMember('${esc(n)}')"` : ''}>📞</div>
+          <div class="mact ${online ? '' : 'disabled'}" ${online ? `onclick="videoCallMember('${esc(n)}')"` : ''}>📹</div>
+        </div>
+      </div>`;
+    }).join('');
 }
 
 // ── Appel sortant ─────────────────────────────────────────
