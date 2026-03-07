@@ -248,7 +248,7 @@ select option{background:#101820}
 // ════════════════════════════════════════════════════════════════
 
 // ▼▼▼  REMPLACEZ PAR L'URL DE VOTRE SERVEUR RENDER  ▼▼▼
-const SIGNAL_SERVER = 'wss://mycall-utj5.onrender.com';
+const SIGNAL_SERVER = 'wss://VOTRE-APP.onrender.com';
 // ▲▲▲  ex: 'wss://nexus-signal.onrender.com'        ▲▲▲
 
 const ICE_CFG = { iceServers: [
@@ -383,14 +383,14 @@ function connectWS() {
       // Liste des pairs déjà présents → on initie un appel vers chacun
       case 'peers':
         for (const pid of msg.peers) {
-          if (pid !== myId) await callPeer(pid, true);
+          if (pid !== myId) await callPeer(pid);
         }
         break;
 
-      // Nouveau pair qui vient d'arriver → il va nous appeler, on attend
+      // Nouveau pair qui vient d'arriver → on lui envoie une offre
       case 'peer_joined':
         log('Peer joined:', msg.id);
-        // On prépare juste la PC ; l'offre viendra de lui
+        if (!pcs[msg.id]) await callPeer(msg.id);
         break;
 
       // Offre WebRTC reçue
@@ -435,7 +435,11 @@ function relay(toPeer, relayType, payload) {
 
 // ── WebRTC ──
 function makePc(pid) {
-  if (pcs[pid]) { pcs[pid].close(); }
+  // Ne pas écraser une connexion déjà établie ou en cours
+  if (pcs[pid] && ['connected','connecting'].includes(pcs[pid].connectionState)) {
+    return pcs[pid];
+  }
+  if (pcs[pid]) pcs[pid].close();
   const pc = new RTCPeerConnection(ICE_CFG);
   pcs[pid] = pc;
 
@@ -474,8 +478,7 @@ function makePc(pid) {
   return pc;
 }
 
-async function callPeer(pid, impolite) {
-  // "impolite" = on initie l'offre
+async function callPeer(pid) {
   const pc = makePc(pid);
   const dc = pc.createDataChannel('meta');
   setupDC(dc, pid);
@@ -486,10 +489,24 @@ async function callPeer(pid, impolite) {
 }
 
 async function handleOffer(from, sdp) {
-  // Répondre à une offre entrante
-  const pc = makePc(from);
+  // Glare (collision) : on a peut-être déjà envoyé une offre à ce pair.
+  // Tie-break : le pair avec le plus petit ID cède (rollback) et accepte l'offre adverse.
+  const existing = pcs[from];
+  if (existing && existing.signalingState === 'have-local-offer') {
+    if (myId < from) {
+      // On est "poli" : on abandonne notre offre et on accepte la sienne
+      log('Glare: rolling back, accepting offer from', from);
+      await existing.setLocalDescription({ type: 'rollback' }).catch(() => {});
+    } else {
+      // On est "impoli" : on ignore son offre, il va recevoir notre réponse
+      log('Glare: ignoring offer from', from, '(we are impolite)');
+      return;
+    }
+  }
 
+  const pc = existing || makePc(from);
   await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  await flushIceBuf(from, pc);
   const answer = await pc.createAnswer();
   await pc.setLocalDescription(answer);
   relay(from, 'answer', pc.localDescription.toJSON());
@@ -499,21 +516,23 @@ async function handleAnswer(from, sdp) {
   const pc = pcs[from];
   if (!pc || pc.signalingState !== 'have-local-offer') return;
   await pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(e => log('answer err', e));
+  await flushIceBuf(from, pc);
 }
 
 async function handleIce(from, candidate) {
   const pc = pcs[from];
   if (!pc) return;
-  // Mettre en buffer si la description distante n'est pas encore prête
   if (!pc.remoteDescription) {
     pc._iceBuf = pc._iceBuf || [];
     pc._iceBuf.push(candidate);
     return;
   }
-  await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(()=>{});
-  // Vider le buffer
-  for (const c of (pc._iceBuf||[])) {
-    await pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});
+  await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
+}
+
+async function flushIceBuf(pid, pc) {
+  for (const c of (pc._iceBuf || [])) {
+    await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
   }
   pc._iceBuf = [];
 }
