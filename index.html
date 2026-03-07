@@ -207,11 +207,11 @@ select option{background:#101820}
     <div class="logo">NEXUS</div>
     <div class="tagline">Messagerie · Appels vidéo</div>
     <div class="fl">Qui êtes-vous ?</div>
-    <div class="name-btns">
-      <button class="nbtn" onclick="enterAs('Denis')">Denis</button>
-      <button class="nbtn" onclick="enterAs('Eugenia')">Eugenia</button>
-      <button class="nbtn" onclick="enterAs('Maryse')">Maryse</button>
-      <button class="nbtn" onclick="enterAs('André')">André</button>
+    <div class="name-btns" id="nameBtns">
+      <button class="nbtn" data-name="Denis">Denis</button>
+      <button class="nbtn" data-name="Eugenia">Eugenia</button>
+      <button class="nbtn" data-name="Maryse">Maryse</button>
+      <button class="nbtn" data-name="André">André</button>
     </div>
     <button class="binstall" id="bInstall" style="display:none">⬇ Installer l’application</button>
     <div class="ios-hint" id="iosHint" style="display:none">
@@ -392,8 +392,9 @@ window.addEventListener('appinstalled', () => {
 // ── Init ──────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   // PWA install prompt
-  // Si beforeinstallprompt a déjà été capturé, afficher le bouton
-  if (deferredPrompt) $('bInstall').style.display = 'block';
+  // Si beforeinstallprompt a déjà été capturé avant DOMContentLoaded
+  if (deferredPrompt) { $('bInstall').style.display = 'block'; log('PWA prompt déjà prêt'); }
+  else { log('PWA prompt pas encore disponible'); }
   $('bInstall').onclick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -406,7 +407,11 @@ window.addEventListener('DOMContentLoaded', () => {
     $('iosHint').style.display = 'block';
   }
 
-  // name selection via buttons
+  // Boutons de sélection du nom
+  document.getElementById('nameBtns').addEventListener('click', e => {
+    const btn = e.target.closest('.nbtn');
+    if (btn && btn.dataset.name) enterAs(btn.dataset.name);
+  });
 
   // Onglets
   document.querySelectorAll('.tab').forEach(t => {
@@ -416,6 +421,19 @@ window.addEventListener('DOMContentLoaded', () => {
       t.classList.add('on');
       $('v'+t.dataset.tab.charAt(0).toUpperCase()+t.dataset.tab.slice(1)).classList.add('on');
     };
+  });
+
+  // Délégation clics sur la liste de contacts (posé une seule fois)
+  document.getElementById('memberList').addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (btn) {
+      const action = btn.dataset.action;
+      const name   = btn.dataset.name;
+      if (action === 'call'  && !btn.classList.contains('disabled')) callMember(name);
+      if (action === 'video' && !btn.classList.contains('disabled')) videoCallMember(name);
+      if (action === 'remove') removeContact(name);
+    }
+    if (e.target.closest('#bAddContact')) openAddContact();
   });
 
   // Chat
@@ -592,18 +610,7 @@ function renderMembers() {
   list.innerHTML = rows + `<button class="add-contact-btn" id="bAddContact">
     <span style="font-size:18px">➕</span> Ajouter un contact
   </button>`;
-  // Event delegation — évite les problèmes d'encodage dans onclick="..."
-  list.onclick = e => {
-    const btn = e.target.closest('[data-action]');
-    if (btn) {
-      const action = btn.dataset.action;
-      const name   = btn.dataset.name;
-      if (action === 'call'   && !btn.classList.contains('disabled')) callMember(name);
-      if (action === 'video'  && !btn.classList.contains('disabled')) videoCallMember(name);
-      if (action === 'remove') removeContact(name);
-    }
-    if (e.target.closest('#bAddContact')) openAddContact();
-  };
+  // Le listener est posé une seule fois dans DOMContentLoaded
 }
 
 // ── Gestion contacts ─────────────────────────────────────
@@ -627,15 +634,12 @@ function removeContact(name) {
   send({ type:'remove_contact', name });
 }
 function renderLobbyButtons() {
-  const container = document.querySelector('.name-btns');
+  const container = document.getElementById('nameBtns');
   if (!container) return;
   container.innerHTML = CONTACTS.map(n =>
     `<button class="nbtn" data-name="${esc(n)}">${esc(n)}</button>`
   ).join('');
-  container.onclick = e => {
-    const btn = e.target.closest('.nbtn');
-    if (btn) enterAs(btn.dataset.name);
-  };
+  // Le listener est déjà posé sur nameBtns dans DOMContentLoaded (event delegation)
 }
 
 // ── Changer de nom ───────────────────────────────────────
