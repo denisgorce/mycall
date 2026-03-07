@@ -38,6 +38,9 @@ input[type=text]::placeholder{color:var(--m)}
 .benter:hover{opacity:.88}
 .benter:active{opacity:.7}
 .benter:disabled{opacity:.4;pointer-events:none}
+.name-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.nbtn{padding:14px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:10px;color:var(--t);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .18s;letter-spacing:.3px}
+.nbtn:hover,.nbtn:active{border-color:var(--a);background:rgba(0,212,255,.1);color:var(--a);transform:scale(.97)}
 .binstall{width:100%;padding:11px;background:none;border:1px solid var(--bd);border-radius:8px;color:var(--m);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;margin-top:8px;transition:all .15s}
 .binstall:hover{border-color:var(--a);color:var(--a)}
 .ios-hint{font-size:10px;color:var(--m);line-height:1.8;margin-top:12px;padding:10px;background:var(--s2);border-radius:8px;border:1px dashed var(--bd)}
@@ -177,10 +180,13 @@ select option{background:#101820}
   <div class="card">
     <div class="logo">NEXUS</div>
     <div class="tagline">Messagerie · Appels vidéo</div>
-    <div class="fl">Votre prénom</div>
-    <input type="text" id="uName" placeholder="Marie" maxlength="18"
-      autocomplete="given-name" autocorrect="off" autocapitalize="words">
-    <button class="benter" id="benter">Entrer →</button>
+    <div class="fl">Qui êtes-vous ?</div>
+    <div class="name-btns">
+      <button class="nbtn" onclick="enterAs('Denis')">Denis</button>
+      <button class="nbtn" onclick="enterAs('Eugenia')">Eugenia</button>
+      <button class="nbtn" onclick="enterAs('Maryse')">Maryse</button>
+      <button class="nbtn" onclick="enterAs('André')">André</button>
+    </div>
     <button class="binstall" id="bInstall" style="display:none">⬇ Installer l’application</button>
     <div class="ios-hint" id="iosHint" style="display:none">
       📲 Sur iPhone : Safari → <b>Partager</b> → <b>Sur l’écran d’accueil</b>
@@ -274,7 +280,7 @@ select option{background:#101820}
 // ═══════════════════════════════════════════════════════════
 
 const SIGNAL_SERVER = 'wss://mycall-utj5.onrender.com';
-const CONTACTS = ['Eugenia', 'Maryse', 'André']; // liste fixe des membres
+const CONTACTS = ['Denis', 'Eugenia', 'Maryse', 'André']; // liste fixe des membres
 
 const ICE_CFG = { iceServers: [
   { urls:'stun:stun.l.google.com:19302' },
@@ -332,8 +338,7 @@ window.addEventListener('DOMContentLoaded', () => {
     $('iosHint').style.display = 'block';
   }
 
-  $('uName').addEventListener('keydown', e => { if(e.key==='Enter') enter(); });
-  $('benter').onclick = enter;
+  // name selection via buttons
 
   // Onglets
   document.querySelectorAll('.tab').forEach(t => {
@@ -381,9 +386,17 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Lobby ─────────────────────────────────────────────────
+function enterAs(name) {
+  myName = name;
+  _doEnter();
+}
+
 async function enter() {
-  myName = $('uName').value.trim() || 'Anonyme';
-  $('benter').disabled = true;
+  myName = 'Anonyme';
+  _doEnter();
+}
+
+async function _doEnter() {
   myId = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   $('hMyName').textContent = myName;
   $('lobby').style.display = 'none';
