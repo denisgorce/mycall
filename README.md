@@ -1,107 +1,147 @@
 # NEXUS — Guide de déploiement
 
+## Ce que fait l'application
+
+- **Messagerie** : chat de groupe en temps réel
+- **Appels vidéo** : appel entre membres avec sonnerie
+- **PWA** : s'installe sur l'écran d'accueil comme une vraie app
+- **Notifications push** : recevoir un appel même navigateur en arrière-plan
+- **4 membres fixes** : Denis, Eugenia, Maryse, André
+
+Au lancement, on choisit son prénom parmi les 4 boutons. La liste de contacts affiche les membres en ligne (🟢) et hors ligne (⚫) en temps réel.
+
+---
+
 ## Architecture
 
 ```
 smartphones / PC
       │
       │  WebRTC (audio/vidéo direct, P2P chiffré)
+      │  WebSocket (signaling + chat + notifications)
       │
-      └──── WebSocket ────► server.js  (signaling)
-                            hébergé sur Render.com (gratuit)
+      └──────────────► server.js  (Render.com)
 ```
-
-Le **server.js** sert uniquement à mettre les participants en contact.
-Une fois connectés, l'audio et la vidéo passent **directement** entre les appareils.
 
 ---
 
-## Étape 1 — Déployer le serveur de signaling (5 minutes, gratuit)
+## Fichiers à déployer
 
-### 1.1 Créer un repo GitHub
+| Fichier | Où | Rôle |
+|---|---|---|
+| `server.js` | Render.com | Signaling + push notifications |
+| `package.json` | Render.com | Dépendances Node.js |
+| `index.html` | GitHub Pages | Application cliente |
+| `sw.js` | GitHub Pages | Service Worker (PWA + push) |
+| `manifest.json` | GitHub Pages | Config PWA (icône, nom…) |
+| `icon-192.png` | GitHub Pages | Icône app 192×192 |
+| `icon-512.png` | GitHub Pages | Icône app 512×512 |
 
-1. Allez sur github.com → **New repository**
-2. Nom : `nexus-signaling` (public ou privé, peu importe)
-3. Ajoutez les deux fichiers dans ce repo :
-   - `server.js`
-   - `package.json`
+---
+
+## Étape 1 — Déployer le serveur sur Render.com
+
+### 1.1 Créer un repo GitHub pour le serveur
+
+Créez un repo (ex: `nexus-server`) contenant uniquement :
+- `server.js`
+- `package.json`
 
 ### 1.2 Déployer sur Render.com
 
-1. Créez un compte gratuit sur **render.com**
-2. Tableau de bord → **New +** → **Web Service**
-3. Connectez votre repo GitHub `nexus-signaling`
-4. Paramètres :
-   - **Name** : `nexus-signal` (ou ce que vous voulez)
+1. [render.com](https://render.com) → **New + → Web Service**
+2. Connectez le repo `nexus-server`
+3. Paramètres :
    - **Runtime** : Node
    - **Build Command** : `npm install`
    - **Start Command** : `node server.js`
    - **Plan** : Free
-5. Cliquez **Create Web Service**
-6. Attendez ~2 minutes → vous obtenez une URL :
-   ```
-   https://nexus-signal.onrender.com
-   ```
+4. Dans **Environment → Add Environment Variable** :
+   - `VAPID_PRIVATE_KEY` → `pv1sorrQvGasxr3gHs7ORmdFKMzpyM62NGEby28eVhA`
+   - `VAPID_EMAIL` → `mailto:votre@email.com`
+5. **Create Web Service** → attendez ~2 min
+6. Vous obtenez : `https://mycall-utj5.onrender.com`
 
-> ⚠️ Sur le plan gratuit Render, le serveur "dort" après 15 min d'inactivité.
-> La première connexion peut prendre 30–60 secondes si le serveur est endormi.
-> Pour éviter ça : passez en plan Starter ($7/mois) ou ajoutez un ping toutes les 10 min
-> via UptimeRobot (gratuit).
+> ⚠️ **Plan gratuit Render** : le serveur dort après 15 min d'inactivité.
+> Configurez [UptimeRobot](https://uptimerobot.com) (gratuit) pour pinger
+> `https://mycall-utj5.onrender.com` toutes les 5 minutes.
 
 ---
 
-## Étape 2 — Configurer le client (index.html)
+## Étape 2 — Déployer le client sur GitHub Pages
 
-Ouvrez `index.html` et remplacez à la ligne indiquée :
+1. Créez un repo GitHub (ex: `nexus-app`)
+2. Uploadez tous les fichiers client à la racine :
+   `index.html`, `sw.js`, `manifest.json`, `icon-192.png`, `icon-512.png`
+3. **Settings → Pages → Source : Deploy from branch → main / root**
+4. URL : `https://votre-username.github.io/nexus-app/`
+
+---
+
+## Étape 3 — Installation sur smartphone
+
+### Android (Chrome)
+Un bouton **"⬇ Installer l'application"** apparaît automatiquement dans le lobby.
+Appuyez dessus → confirmez → l'app s'ajoute à l'écran d'accueil.
+
+### iPhone/iPad (Safari)
+Le lobby affiche les instructions :
+**Safari → icône Partager → "Sur l'écran d'accueil"**
+
+> ⚠️ Sur iOS, ouvrir le lien dans **Safari** (pas Chrome ni Firefox).
+> Les notifications push et l'installation PWA ne fonctionnent que dans Safari sur iOS.
+
+---
+
+## Étape 4 — Activer les notifications push
+
+Une fois l'app ouverte et le prénom choisi, une bannière propose d'activer les notifications.
+→ Appuyez sur la bannière → Autoriser
+
+Cela permet de recevoir une sonnerie même quand l'app est en arrière-plan.
+
+> **Limite iOS** : Apple suspend les onglets après quelques minutes en arrière-plan.
+> Pour les appels entrants fiables, laisser l'app ouverte est recommandé.
+
+---
+
+## Modifier les membres
+
+Pour changer les prénoms, modifiez ces deux lignes dans `index.html` :
 
 ```javascript
-// AVANT
-const SIGNAL_SERVER = 'wss://VOTRE-APP.onrender.com';
-
-// APRÈS (adaptez avec votre URL Render)
-const SIGNAL_SERVER = 'wss://nexus-signal.onrender.com';
+// Ligne ~260 : liste pour la logique online/offline
+const CONTACTS = ['Denis', 'Eugenia', 'Maryse', 'André'];
 ```
 
-> Note : HTTPS → `wss://`  (WebSocket sécurisé, obligatoire depuis GitHub Pages)
+```html
+<!-- Vers la ligne ~180 : boutons du lobby -->
+<button class="nbtn" onclick="enterAs('Denis')">Denis</button>
+<button class="nbtn" onclick="enterAs('Eugenia')">Eugenia</button>
+<button class="nbtn" onclick="enterAs('Maryse')">Maryse</button>
+<button class="nbtn" onclick="enterAs('André')">André</button>
+```
 
 ---
 
-## Étape 3 — Héberger le client sur GitHub Pages
+## Clés VAPID (notifications push)
 
-1. Créez un deuxième repo GitHub : `nexus-conf` (ou un seul repo avec tout)
-2. Uploadez `index.html` à la racine
-3. **Settings → Pages → Source : Deploy from branch → main / root**
-4. Votre URL client : `https://votre-username.github.io/nexus-conf/`
+Les clés sont déjà générées et intégrées. Ne les changez pas sauf si vous redeployez
+sur un nouveau domaine — dans ce cas régénérez avec `npx web-push generate-vapid-keys`.
 
----
-
-## Résumé des URLs
-
-| Composant | URL |
-|-----------|-----|
-| Serveur signaling | `wss://nexus-signal.onrender.com` |
-| Application client | `https://votre-username.github.io/nexus-conf/` |
-| Lien de salle | `https://...github.io/nexus-conf/?room=nexus-abc12` |
+| Clé | Valeur |
+|---|---|
+| Publique | `BPD4U8JbtKKc0DPpz8zj4y2I-pf6DMNt8wZ1gjRsAJwGeRSFGMMDH7ynZkmaz7aBvZ7utdtWDnhKhj0T6KvKKGU` |
+| Privée | Dans les variables d'env Render (ne pas exposer) |
 
 ---
-
-## Fonctionnement technique
-
-1. Les deux participants ouvrent le même lien (`?room=xxx`)
-2. Chacun se connecte au serveur WebSocket
-3. Le serveur leur indique mutuellement leur existence
-4. Ils échangent une **offre SDP** et une **réponse SDP** via le serveur
-5. Ils échangent des **candidats ICE** (adresses réseau) via le serveur
-6. Une fois la route trouvée (via STUN/TURN si nécessaire), la connexion est **directe**
-7. Le serveur n'intervient plus — audio et vidéo transitent P2P
 
 ## Compatibilité
 
-| Navigateur | Support |
-|------------|---------|
-| Chrome (Android/desktop) | ✅ Complet |
-| Safari (iOS 15+) | ✅ Fonctionne |
-| Firefox (desktop) | ✅ Fonctionne |
-| Edge (desktop) | ✅ Complet |
-| Samsung Internet | ✅ Fonctionne |
-| Chrome iOS | ✅ Fonctionne |
+| Navigateur | Appels | Chat | PWA | Push |
+|---|---|---|---|---|
+| Chrome Android | ✅ | ✅ | ✅ | ✅ |
+| Safari iOS 16.4+ | ✅ | ✅ | ✅ | ✅ |
+| Chrome desktop | ✅ | ✅ | ✅ | ✅ |
+| Firefox desktop | ✅ | ✅ | ❌ | ❌ |
+| Samsung Internet | ✅ | ✅ | ✅ | ✅ |
