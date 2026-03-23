@@ -555,12 +555,25 @@ async function doLogout() {
   }
   await auth.signOut();
 }
-function setErr(m) { document.getElementById('auth-err').textContent = m; }
+// APRÈS
+function setErr(m) { document.getElementById('auth-err').textContent = m || 'Erreur inconnue.'; }
 function authMsg(c) {
-  return ({'auth/user-not-found':'Utilisateur introuvable.','auth/wrong-password':'Mot de passe incorrect.',
-    'auth/email-already-in-use':'Email déjà utilisé.','auth/invalid-email':'Email invalide.',
-    'auth/weak-password':'Mot de passe faible.','auth/network-request-failed':'Erreur réseau.',
-    'auth/too-many-requests':'Trop de tentatives.'})[c] || `Erreur (${c})`;
+  const msgs = {
+    'auth/user-not-found':            'Utilisateur introuvable.',
+    'auth/wrong-password':            'Mot de passe incorrect.',
+    'auth/invalid-credential':        'Email ou mot de passe incorrect.',
+    'auth/invalid-login-credentials': 'Email ou mot de passe incorrect.',
+    'auth/email-already-in-use':      'Email déjà utilisé.',
+    'auth/invalid-email':             'Email invalide.',
+    'auth/weak-password':             'Mot de passe trop court (min. 6 caractères).',
+    'auth/network-request-failed':    'Erreur réseau. Vérifiez votre connexion.',
+    'auth/too-many-requests':         'Trop de tentatives. Réessayez plus tard.',
+    'auth/user-disabled':             'Ce compte a été désactivé.',
+    'auth/operation-not-allowed':     'Connexion par email non activée dans Firebase.',
+    'auth/missing-password':          'Mot de passe manquant.',
+    'auth/missing-email':             'Email manquant.',
+  };
+  return msgs[c] || `Erreur : ${c || 'inconnue'}`;
 }
 auth.onAuthStateChanged(async user => {
   if (user) { me = user; await onLogin(user); }
