@@ -25,20 +25,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # ── 3. Node.js ───────────────────────────────
+      # ── 3. Node.js (sans cache car pas de lock file) ─
       - name: 🟢 Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # ⚠️ "cache: npm" retiré — nécessite un package-lock.json
 
       # ── 4. Android SDK ───────────────────────────
       - name: 🤖 Setup Android SDK
         uses: android-actions/setup-android@v3
 
       # ── 5. Injecter la config Firebase ───────────
-      #    Les secrets sont définis dans :
-      #    GitHub → Settings → Secrets and variables → Actions
       - name: 🔐 Inject Firebase config
         run: |
           # index.html
@@ -59,7 +57,7 @@ jobs:
 
       # ── 6. NPM install ────────────────────────────
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm install   # ✅ remplace "npm ci" (qui exige un lock file)
 
       # ── 7. Capacitor : ajouter Android ───────────
       - name: ➕ Capacitor add android
@@ -180,7 +178,7 @@ jobs:
           node-version: '20'
 
       - name: 📦 Install Functions dependencies
-        run: cd functions && npm ci
+        run: cd functions && npm install   # ✅ remplace "npm ci"
 
       - name: 🚀 Deploy to Firebase Functions
         uses: w9jds/firebase-action@master
