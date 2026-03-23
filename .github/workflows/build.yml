@@ -1,0 +1,191 @@
+name: 🚀 Build & Release APK
+
+on:
+  push:
+    branches: [ main ]
+    tags:     [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:        # Bouton "Run workflow" manuel
+
+jobs:
+  build-apk:
+    name: Build APK Android
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Récupérer le code ──────────────────────
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Java 17 ───────────────────────────────
+      - name: ☕ Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # ── 3. Node.js ───────────────────────────────
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ── 4. Android SDK ───────────────────────────
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── 5. Injecter la config Firebase ───────────
+      #    Les secrets sont définis dans :
+      #    GitHub → Settings → Secrets and variables → Actions
+      - name: 🔐 Inject Firebase config
+        run: |
+          # index.html
+          sed -i "s|VOTRE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g"             www/index.html
+          sed -i "s|VOTRE_PROJECT.firebaseapp.com|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" www/index.html
+          sed -i "s|https://VOTRE_PROJECT-default-rtdb.firebaseio.com|${{ secrets.FIREBASE_DATABASE_URL }}|g" www/index.html
+          sed -i "s|VOTRE_PROJECT|${{ secrets.FIREBASE_PROJECT_ID }}|g"          www/index.html
+          sed -i "s|VOTRE_SENDER_ID|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" www/index.html
+          sed -i "s|VOTRE_APP_ID|${{ secrets.FIREBASE_APP_ID }}|g"               www/index.html
+          sed -i "s|VOTRE_VAPID_KEY|${{ secrets.FIREBASE_VAPID_KEY }}|g"         www/index.html
+          # Service Worker
+          sed -i "s|VOTRE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g"             www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_PROJECT.firebaseapp.com|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" www/firebase-messaging-sw.js
+          sed -i "s|https://VOTRE_PROJECT-default-rtdb.firebaseio.com|${{ secrets.FIREBASE_DATABASE_URL }}|g" www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_PROJECT|${{ secrets.FIREBASE_PROJECT_ID }}|g"          www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_SENDER_ID|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_APP_ID|${{ secrets.FIREBASE_APP_ID }}|g"               www/firebase-messaging-sw.js
+
+      # ── 6. NPM install ────────────────────────────
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      # ── 7. Capacitor : ajouter Android ───────────
+      - name: ➕ Capacitor add android
+        run: npx cap add android
+
+      # ── 8. Copier les fichiers web → Android ─────
+      - name: 📋 Capacitor copy
+        run: npx cap copy android
+
+      # ── 9. Gradle permissions ────────────────────
+      - name: 🔧 Make gradlew executable
+        run: chmod +x android/gradlew
+
+      # ── 10. Build APK debug ───────────────────────
+      - name: 🏗️ Build APK (debug)
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      # ── 11. Renommer l'APK ────────────────────────
+      - name: 📝 Rename APK
+        run: |
+          VERSION="${{ github.ref_name }}"
+          [[ "$VERSION" == "main" ]] && VERSION="dev-$(date +%Y%m%d-%H%M)"
+          mv android/app/build/outputs/apk/debug/app-debug.apk \
+             android/app/build/outputs/apk/debug/mycall-${VERSION}.apk
+          echo "APK_NAME=mycall-${VERSION}.apk" >> $GITHUB_ENV
+          echo "APK_PATH=android/app/build/outputs/apk/debug/mycall-${VERSION}.apk" >> $GITHUB_ENV
+
+      # ── 12. Upload artifact (toujours dispo) ──────
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_PATH }}
+          retention-days: 30
+
+      # ── 13. Créer une Release GitHub (sur tag) ────
+      - name: 🏷️ Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "mycall ${{ github.ref_name }}"
+          body: |
+            ## 📞 mycall ${{ github.ref_name }}
+
+            ### Installation
+            1. Téléchargez `${{ env.APK_NAME }}`
+            2. Sur Android : Paramètres → Sécurité → Sources inconnues → Activer
+            3. Installez l'APK
+
+            ### Changelog
+            ${{ github.event.head_commit.message }}
+          files: ${{ env.APK_PATH }}
+          draft: false
+          prerelease: false
+
+  # ── Job bonus : déployer la version Web ──────────
+  deploy-web:
+    name: 🌐 Deploy Web App (GitHub Pages)
+    runs-on: ubuntu-latest
+    needs: build-apk
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔐 Inject Firebase config
+        run: |
+          sed -i "s|VOTRE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g"             www/index.html
+          sed -i "s|VOTRE_PROJECT.firebaseapp.com|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" www/index.html
+          sed -i "s|https://VOTRE_PROJECT-default-rtdb.firebaseio.com|${{ secrets.FIREBASE_DATABASE_URL }}|g" www/index.html
+          sed -i "s|VOTRE_PROJECT|${{ secrets.FIREBASE_PROJECT_ID }}|g"          www/index.html
+          sed -i "s|VOTRE_SENDER_ID|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" www/index.html
+          sed -i "s|VOTRE_APP_ID|${{ secrets.FIREBASE_APP_ID }}|g"               www/index.html
+          sed -i "s|VOTRE_VAPID_KEY|${{ secrets.FIREBASE_VAPID_KEY }}|g"         www/index.html
+          sed -i "s|VOTRE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g"             www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_PROJECT.firebaseapp.com|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" www/firebase-messaging-sw.js
+          sed -i "s|https://VOTRE_PROJECT-default-rtdb.firebaseio.com|${{ secrets.FIREBASE_DATABASE_URL }}|g" www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_PROJECT|${{ secrets.FIREBASE_PROJECT_ID }}|g"          www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_SENDER_ID|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" www/firebase-messaging-sw.js
+          sed -i "s|VOTRE_APP_ID|${{ secrets.FIREBASE_APP_ID }}|g"               www/firebase-messaging-sw.js
+
+      - name: ⚙️ Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: 📦 Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: www/
+
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ── Job : déployer les Cloud Functions ──────────
+  deploy-functions:
+    name: ☁️ Deploy Cloud Functions
+    runs-on: ubuntu-latest
+    needs: build-apk
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install Functions dependencies
+        run: cd functions && npm ci
+
+      - name: 🚀 Deploy to Firebase Functions
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions,database
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}

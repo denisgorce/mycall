@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "rooms":     { ".read": "auth != null", ".write": "auth != null" },
+    "messages":  { "$r": { ".read": "auth != null", ".write": "auth != null" } },
+    "presence":  { ".read": "auth != null", "$uid": { ".write": "auth.uid == $uid" } },
+    "typing":    { "$r": { ".read": "auth != null", "$uid": { ".write": "auth.uid == $uid" } } },
+    "users":     { ".read": "auth != null", "$uid": { ".write": "auth.uid == $uid" } },
+    "calls":     { ".read": "auth != null", ".write": "auth != null" },
+    "fcmTokens": { ".read": false, "$uid": { ".write": "auth.uid == $uid" } },
+    "reads":     { "$r": { ".read": "auth != null", "$uid": { ".write": "auth.uid == $uid" } } },
+    "userDMs":   { "$uid": { ".read": "auth.uid == $uid", ".write": "auth != null" } }
+  }
+}

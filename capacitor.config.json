@@ -1,0 +1,38 @@
+{
+  "appId": "com.mycall.app",
+  "appName": "mycall",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#000000",
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#000000",
+      "showSpinner": false
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#3b82f6",
+      "sound": "mycall_ring.wav"
+    },
+    "BackgroundRunner": {
+      "label": "com.mycall.app.background",
+      "src": "background.js",
+      "event": "keepAlive",
+      "repeat": true,
+      "interval": 15,
+      "autoStart": false
+    }
+  }
+}
