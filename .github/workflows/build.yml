@@ -183,7 +183,7 @@ jobs:
       - name: 🚀 Deploy to Firebase Functions
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions,database
+          args: deploy --only functions,database --force   # ← ajouter --force ici
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
