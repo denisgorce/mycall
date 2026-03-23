@@ -120,7 +120,7 @@ exports.onCallCreated = functions
 
 /* ══════════════════════════════════════════════
    2. NOTIFICATION DE MESSAGE DIRECT
-   Déclenchée quand messages/dm-*/{}  est créé
+   Déclenchée quand messages/dm-{roomId}/{messageId} est créé
    N'envoie QUE pour les conversations DM
 ══════════════════════════════════════════════ */
 exports.onMessageSent = functions
