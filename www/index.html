@@ -504,7 +504,6 @@ const auth      = firebase.auth();
 const messaging = firebase.messaging();
 
 // Mode hors-ligne — cache local Firebase (IndexedDB)
-db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
 /* ── État global ── */
 let me = null, myName = '', myStatus = 'online', myStatusTxt = 'En ligne';
