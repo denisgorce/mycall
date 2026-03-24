@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "269381903946",
+    "firebase_url": "https://my-call-call-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "my-call-call",
+    "storage_bucket": "my-call-call.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:269381903946:android:91ba7fc6dd0c40a5da28b3",
+        "android_client_info": {
+          "package_name": "com.mycall.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDJoB_tSEN_Ui7bMt-kZNfAZ0L4JoVGhc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
