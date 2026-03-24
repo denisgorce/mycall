@@ -60,6 +60,12 @@ jobs:
         run: npm install   # ✅ remplace "npm ci" (qui exige un lock file)
 
       # ── 7. Capacitor : ajouter Android ───────────
+      - name: 🗑️ Remove existing android folder
+        run: rm -rf android
+      
+      - name: ➕ Capacitor add android
+        run: npx cap add android
+        
       - name: ➕ Capacitor sync android
         run: npx cap sync android
 
