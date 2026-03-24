@@ -4,7 +4,7 @@
     "firebase_url": "https://my-call-call-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "my-call-call",
     "storage_bucket": "my-call-call.firebasestorage.app"
-  },
+  }, 
   "client": [
     {
       "client_info": {
