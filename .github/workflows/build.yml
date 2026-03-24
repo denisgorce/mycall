@@ -63,6 +63,10 @@ jobs:
       - name: ➕ Capacitor add android
         run: npx cap add android
 
+      - name: 🔥 Inject google-services.json
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+        
       # ── 8. Copier les fichiers web → Android ─────
       - name: 📋 Capacitor copy
         run: npx cap copy android
