@@ -68,12 +68,6 @@ jobs:
         
       - name: ➕ Capacitor sync android
         run: npx cap sync android
-
-      - name: 🔥 Inject google-services.json
-        run: |
-          cat << 'EOF' > android/app/google-services.json
-          ${{ secrets.GOOGLE_SERVICES_JSON }}
-          EOF
         
       # ── 8. Copier les fichiers web → Android ─────
       - name: 📋 Capacitor copy
