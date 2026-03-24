@@ -69,7 +69,7 @@ jobs:
           printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
       
       - name: ➕ Capacitor add android
-        run: npx cap add android
+        run: npx cap sync android
         
       - name: ➕ Capacitor sync android
         run: npx cap sync android
