@@ -2,7 +2,6 @@
   "appId": "com.mycall.app",
   "appName": "mycall",
   "webDir": "www",
-  "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",
     "cleartext": false
