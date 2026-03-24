@@ -62,6 +62,11 @@ jobs:
       # ── 7. Capacitor : ajouter Android ───────────
       - name: 🗑️ Remove existing android folder
         run: rm -rf android
+
+      - name: 🔥 Inject google-services.json
+        run: |
+          mkdir -p android/app
+          printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
       
       - name: ➕ Capacitor add android
         run: npx cap add android
