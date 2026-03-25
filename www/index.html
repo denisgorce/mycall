@@ -711,15 +711,11 @@ async function openJitsi(room,iv,cId){
 
   cnt.innerHTML = '';
 
-  // ── 2. Lancer JitsiMeetExternalAPI avec le token ─────────────────────────
+// ── 2. Lancer JitsiMeetExternalAPI avec le token ─────────────────────────
   const launch = () => {
     const options = {
-      // MODIFICATION ICI : on utilise directement jitsiRoom car il est déjà formaté
       roomName: jitsiRoom, 
-      
-      // MODIFICATION ICI : on utilise jwtToken (la variable définie plus haut)
       jwt: jwtToken, 
-
       width: '100%',
       height: '100%',
       parentNode: cnt,
@@ -743,6 +739,11 @@ async function openJitsi(room,iv,cId){
       },
       userInfo: { displayName: myName },
     };
+
+    // On lance Jitsi une seule fois et on le lie à la variable globale jitsiAPI
+    jitsiAPI = new JitsiMeetExternalAPI(JITSI_SERVER, options);
+    jitsiAPI.addEventListener('readyToClose', () => endCall(cId));
+  };
 
     // On lance sur 8x8.vc
     const api = new JitsiMeetExternalAPI("8x8.vc", options);
