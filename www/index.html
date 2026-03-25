@@ -255,15 +255,26 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--t1);font-famil
 
 @media(max-width:800px){.online-panel{display:none}}
 @media(max-width:540px){
-  .sidebar{position:absolute;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .2s;width:85%;min-width:0}
-  .sidebar.open{transform:none}.back-btn{display:block!important}.chat-area{display:flex!important}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .2s;width:88%;min-width:0;max-width:320px}
+  .sidebar.open{transform:none;box-shadow:4px 0 20px rgba(0,0,0,0.18)}
+  .back-btn{display:block!important}
+  .chat-area{display:flex!important}
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:99}
+  .mob-overlay.on{display:block}
+  .rooms.flex-rooms{flex:none;max-height:35vh}
+  #dm-list.flex-rooms{flex:none;max-height:28vh}
+  .quick-actions{flex-shrink:0;padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  .mob-open-btn{display:flex!important}
 }
+.mob-open-btn{display:none;position:fixed;bottom:22px;right:18px;z-index:90;width:52px;height:52px;border-radius:50%;background:var(--wg);border:none;color:#fff;font-size:24px;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.22);cursor:pointer}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0s!important;transition-duration:0s!important}}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
+<div id="mob-overlay" class="mob-overlay" onclick="closeSidebar()"></div>
+<button class="mob-open-btn" id="mob-open-btn" onclick="openSidebar()" title="Menu">☰</button>
 <div id="screen-login" class="screen active">
   <div class="login-card">
     <div class="brand"><div class="brand-ico">🗨️</div><span class="brand-name">mycall</span></div>
@@ -599,7 +610,7 @@ function openRoom(room){
   document.getElementById('c-title').textContent=isGrp?('# '+room.name):room.otherName;
   document.getElementById('c-sub').textContent=room.type==='dm'?'Message direct':'Salon public';
   cancelReply();closeSearch();loadMsgs(room.id);watchTyping(room.id);watchReadReceipts(room.id);
-  if(window.innerWidth<=540)document.getElementById('sidebar').classList.remove('open');
+  if(window.innerWidth<=540)closeSidebar();
 }
 function openNewRoom(){document.getElementById('nr-inp').value='';document.getElementById('nr-overlay').classList.add('open');setTimeout(()=>document.getElementById('nr-inp').focus(),80);}
 async function createRoom(){const name=document.getElementById('nr-inp').value.trim();if(!name)return;const id=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-');const icons=['💬','🚀','🔥','💡','🎯','⚡','🔐','🌍'];await db.ref(`rooms/${id}`).set({name,id,icon:icons[~~(Math.random()*icons.length)],createdBy:me.uid,createdAt:Date.now()});closeO('nr-overlay');toast('Salon #'+name+' créé','ok');}
@@ -677,9 +688,11 @@ async function setupFCM(uid,username){if(!('serviceWorker' in navigator)||FCM_VA
 async function refreshFCMToken(uid,username){if(!('serviceWorker' in navigator)||FCM_VAPID_KEY==='VOTRE_VAPID_KEY')return;try{const t=await messaging.getToken({vapidKey:FCM_VAPID_KEY});if(t){const s=await db.ref(`fcmTokens/${uid}/token`).once('value');if(s.val()!==t)await db.ref(`fcmTokens/${uid}`).set({token:t,username,ts:Date.now()});}}catch(e){}}
 
 /* ══ UTILS ══ */
-function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active');}
+function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active');const fab=document.getElementById('mob-open-btn');if(fab)fab.style.display=n==='app'&&window.innerWidth<=540?'flex':'none';}
 function closeO(id){document.getElementById(id).classList.remove('open');}
-function goBack(){document.getElementById('sidebar').classList.add('open');}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('mob-overlay').classList.add('on');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mob-overlay').classList.remove('on');}
+function goBack(){openSidebar();}
 function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
 function initials(n){if(!n)return'?';const p=n.trim().split(/[\s_-]/);return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
 function autoH(el){requestAnimationFrame(()=>{el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';});}
