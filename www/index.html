@@ -518,7 +518,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--t1);font-famil
 const FIREBASE_CONFIG={apiKey:"VOTRE_API_KEY",authDomain:"VOTRE_PROJECT.firebaseapp.com",databaseURL:"https://VOTRE_PROJECT-default-rtdb.firebaseio.com",projectId:"VOTRE_PROJECT",storageBucket:"VOTRE_PROJECT.appspot.com",messagingSenderId:"VOTRE_SENDER_ID",appId:"VOTRE_APP_ID"};
 const FCM_VAPID_KEY="VOTRE_VAPID_KEY";
 const JITSI_SERVER="8x8.vc";
-const JAAS_APP_ID="VOTRE_JAAS_APP_ID"; // ex: vpaas-magic-cookie-a1b2c3d4e5f6
+const JAAS_APP_ID="vpaas-magic-cookie-029bc36eeeea492ea9ebd925f3b6b374"; // ex: vpaas-magic-cookie-a1b2c3d4e5f6
 firebase.initializeApp(FIREBASE_CONFIG);
 const db=firebase.database(),auth=firebase.auth(),messaging=firebase.messaging(),storage=firebase.storage();
 // Initialisation Firebase Functions (région europe-west1 = même que vos fonctions)
@@ -706,31 +706,43 @@ async function openJitsi(room,iv,cId){
   cnt.innerHTML='';
 
   // ── 2. Lancer JitsiMeetExternalAPI avec le token ─────────────────────────
-  const launch=()=>{
-    const options={
-      roomName:jitsiRoom,
-      width:'100%',
-      height:'100%',
-      parentNode:cnt,
-      configOverwrite:{
-        startWithAudioMuted:false,
-        startWithVideoMuted:!iv,
-        prejoinPageEnabled:false,
-        lobby:{autoKnock:false,enableChat:false},
-        enableLobbyChat:false,
-        requireDisplayName:false,
-        enableAuthentication:false,
-        disableDeepLinking:true,
-        disableInitialGUM:false,
+const launch = () => {
+    // 1. Définissez votre App ID JaaS ici
+    const JAAS_APP_ID = "vpaas-magic-cookie-029bc36eeeea492ea9ebd925f3b6b374"; 
+
+    const options = {
+      // 2. MODIFICATION ICI : on ajoute l'ID et le slash devant le nom de la salle
+      roomName: JAAS_APP_ID + "/" + jitsiRoom, 
+      
+      // 3. AJOUTEZ CETTE LIGNE : elle est indispensable pour le mode modérateur
+      jwt: currentJitsiToken, 
+
+      width: '100%',
+      height: '100%',
+      parentNode: cnt,
+      configOverwrite: {
+        startWithAudioMuted: false,
+        startWithVideoMuted: !iv,
+        prejoinPageEnabled: false,
+        disableInviteFunctions: true, // Recommandé pour JaaS
+        lobby: {autoKnock: false, enableChat: false},
+        enableLobbyChat: false,
+        requireDisplayName: false,
+        enableAuthentication: false,
+        disableDeepLinking: true,
+        disableInitialGUM: false,
       },
-      interfaceConfigOverwrite:{
-        TOOLBAR_BUTTONS:['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','videoquality','tileview'],
-        SHOW_JITSI_WATERMARK:false,
-        SHOW_BRAND_WATERMARK:false,
-        SHOW_PROMOTIONAL_CLOSE_PAGE:false,
+      interfaceConfigOverwrite: {
+        TOOLBAR_BUTTONS: ['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','videoquality','tileview'],
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_BRAND_WATERMARK: false,
+        SHOW_PROMOTIONAL_CLOSE_PAGE: false,
       },
-      userInfo:{displayName:myName},
+      userInfo: { displayName: myName },
     };
+
+    // On lance Jitsi sur le domaine 8x8.vc
+    const api = new JitsiMeetExternalAPI("8x8.vc", options);
     // Injecter le JWT seulement s'il a été obtenu
     if(jwtToken) options.jwt=jwtToken;
     jitsiAPI=new JitsiMeetExternalAPI(JITSI_SERVER,options);
