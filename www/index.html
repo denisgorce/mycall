@@ -696,8 +696,12 @@ async function openJitsi(room,iv,cId){
     const getToken = functionsInstance.httpsCallable('getJitsiToken');
     const result = await getToken({ room, displayName: myName });
     
-    jwtToken = result.data.token; // C'est cette variable qu'on va utiliser
-    jitsiRoom = result.data.jitsiRoom; // Contient déjà l'AppID/nomDuSalon
+    if (result && result.data) {
+        jwtToken = result.data.token;
+        jitsiRoom = result.data.jitsiRoom;
+    } else {
+        throw new Error("Réponse Firebase vide");
+    }
     
     document.getElementById('j-title').textContent = iv ? 'Appel vidéo en cours' : 'Appel vocal en cours';
   } catch (err) {
