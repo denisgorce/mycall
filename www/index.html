@@ -760,7 +760,7 @@ async function openJitsi(room,iv,cId){
     document.head.appendChild(s);
   }
 }
-  function endCall(cId){if(jitsiAPI){try{jitsiAPI.dispose();}catch(e){}jitsiAPI=null;}document.getElementById('jitsi-container').innerHTML='';document.getElementById('jitsi-overlay').classList.remove('open');if(cId)db.ref(`calls/${cId}`).update({status:'ended'});}
+function endCall(cId){if(jitsiAPI){try{jitsiAPI.dispose();}catch(e){}jitsiAPI=null;}document.getElementById('jitsi-container').innerHTML='';document.getElementById('jitsi-overlay').classList.remove('open');if(cId)db.ref(`calls/${cId}`).update({status:'ended'});}
 
 /* ══ HEARTBEAT ══ */
 let hbIv=null;
