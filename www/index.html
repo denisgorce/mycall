@@ -273,15 +273,19 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--t1);font-famil
       <button class="tab"    id="tab-up" onclick="switchTab('up')">Inscription</button>
     </div>
     <div id="form-in">
+      <form onsubmit="event.preventDefault();doLogin()">
       <div class="fld"><label class="lbl">Identifiant</label><input class="inp" id="in-user" type="text" placeholder="votre_pseudo" autocomplete="username"/></div>
       <div class="fld"><label class="lbl">Mot de passe</label><input class="inp" id="in-pass" type="password" placeholder="••••••••" autocomplete="current-password"/></div>
-      <button class="btn-main" onclick="doLogin()">Se connecter</button>
+      <button class="btn-main" type="submit">Se connecter</button>
+      </form>
     </div>
     <div id="form-up" style="display:none">
+      <form onsubmit="event.preventDefault();doRegister()">
       <div class="fld"><label class="lbl">Pseudo</label><input class="inp" id="up-user" type="text" placeholder="mon_pseudo"/></div>
-      <div class="fld"><label class="lbl">Email</label><input class="inp" id="up-email" type="email" placeholder="you@example.com"/></div>
-      <div class="fld"><label class="lbl">Mot de passe</label><input class="inp" id="up-pass" type="password" placeholder="min. 6 caractères"/></div>
-      <button class="btn-main" onclick="doRegister()">Créer un compte</button>
+      <div class="fld"><label class="lbl">Email</label><input class="inp" id="up-email" type="email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="fld"><label class="lbl">Mot de passe</label><input class="inp" id="up-pass" type="password" placeholder="min. 6 caractères" autocomplete="new-password"/></div>
+      <button class="btn-main" type="submit">Créer un compte</button>
+      </form>
     </div>
     <div class="auth-err" id="auth-err"></div>
   </div>
@@ -498,7 +502,7 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--t1);font-famil
 
 <script>
 /* ══ CONFIG ══ */
-const FIREBASE_CONFIG={apiKey:"AIzaSyCs1Coe7_OLWzM6AXj4-BPprwIZoiHxy7o",authDomain:"my-call-call.firebaseapp.com",databaseURL:"https://my-call-call-default-rtdb.europe-west1.firebasedatabase.app",projectId:"my-call-call",storageBucket:"my-call-call.firebasestorage.app",messagingSenderId:"269381903946",appId:"1:269381903946:web:03348a119ba5c0a8da28b3"};
+const FIREBASE_CONFIG={apiKey:"VOTRE_API_KEY",authDomain:"VOTRE_PROJECT.firebaseapp.com",databaseURL:"https://VOTRE_PROJECT-default-rtdb.firebaseio.com",projectId:"VOTRE_PROJECT",storageBucket:"VOTRE_PROJECT.appspot.com",messagingSenderId:"VOTRE_SENDER_ID",appId:"VOTRE_APP_ID"};
 const FCM_VAPID_KEY="VOTRE_VAPID_KEY";
 const JITSI_SERVER="meet.jit.si";
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -678,7 +682,7 @@ function closeO(id){document.getElementById(id).classList.remove('open');}
 function goBack(){document.getElementById('sidebar').classList.add('open');}
 function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
 function initials(n){if(!n)return'?';const p=n.trim().split(/[\s_-]/);return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
-function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+function autoH(el){requestAnimationFrame(()=>{el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';});}
 function fmtTime(ts){if(!ts)return'';const d=new Date(ts);return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 function fmtText(t){let s=esc(t).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`(.*?)`/g,'<code style="background:var(--bg);padding:1px 4px;border-radius:3px;font-size:12px">$1</code>').replace(/\n/g,'<br>');return s.replace(/(https?:\/\/[^\s<>"]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');}
 const AVC=[['#25D366','#128C7E'],['#34B7F1','#1A6E99'],['#FFA040','#9C5A00'],['#A855F7','#6B21A8'],['#EF4444','#991B1B'],['#14B8A6','#134E4A'],['#F59E0B','#78350F'],['#EC4899','#831843']];
