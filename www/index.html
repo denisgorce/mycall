@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,6 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -516,8 +518,11 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--t1);font-famil
 const FIREBASE_CONFIG={apiKey:"VOTRE_API_KEY",authDomain:"VOTRE_PROJECT.firebaseapp.com",databaseURL:"https://VOTRE_PROJECT-default-rtdb.firebaseio.com",projectId:"VOTRE_PROJECT",storageBucket:"VOTRE_PROJECT.appspot.com",messagingSenderId:"VOTRE_SENDER_ID",appId:"VOTRE_APP_ID"};
 const FCM_VAPID_KEY="VOTRE_VAPID_KEY";
 const JITSI_SERVER="8x8.vc";
+const JAAS_APP_ID="VOTRE_JAAS_APP_ID"; // ex: vpaas-magic-cookie-a1b2c3d4e5f6
 firebase.initializeApp(FIREBASE_CONFIG);
 const db=firebase.database(),auth=firebase.auth(),messaging=firebase.messaging(),storage=firebase.storage();
+// Initialisation Firebase Functions (région europe-west1 = même que vos fonctions)
+const functionsInstance=firebase.app().functions('europe-west1');
 firebase.database().goOnline();
 
 let me=null,myName='',myStatus='online',myStatusTxt='En ligne';
@@ -675,7 +680,77 @@ function declineCall(){hideCallBanner();toast('Appel refusé');}
 function hideCallBanner(){clearTimeout(callBannerTmr);stopRing();document.getElementById('call-banner').classList.remove('on');incomingCall=null;}
 function playRing(){if(ringtoneIv)return;try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();const b=()=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type='sine';o.frequency.setValueAtTime(880,audioCtx.currentTime);o.frequency.setValueAtTime(660,audioCtx.currentTime+.15);g.gain.setValueAtTime(.18,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.4);o.start();o.stop(audioCtx.currentTime+.4);};b();ringtoneIv=setInterval(b,1200);if(navigator.vibrate)navigator.vibrate([250,150,250,150,250]);}catch(e){}}
 function stopRing(){clearInterval(ringtoneIv);ringtoneIv=null;try{if(audioCtx){audioCtx.close();audioCtx=null;}}catch(e){}if(navigator.vibrate)navigator.vibrate(0);}
-function openJitsi(room,iv,cId){document.getElementById('call-ico').textContent=iv?'📹':'🎙️';document.getElementById('j-title').textContent=iv?'Appel vidéo en cours':'Appel vocal en cours';document.getElementById('jitsi-overlay').classList.add('open');const cnt=document.getElementById('jitsi-container');cnt.innerHTML='';const launch=()=>{jitsiAPI=new JitsiMeetExternalAPI(JITSI_SERVER,{roomName:room,width:'100%',height:'100%',parentNode:cnt,configOverwrite:{startWithAudioMuted:false,startWithVideoMuted:!iv,prejoinPageEnabled:false,lobby:{autoKnock:false,enableChat:false},enableLobbyChat:false,requireDisplayName:false,enableAuthentication:false,disableDeepLinking:true,disableInitialGUM:false},interfaceConfigOverwrite:{TOOLBAR_BUTTONS:['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','videoquality','tileview'],SHOW_JITSI_WATERMARK:false,SHOW_BRAND_WATERMARK:false,SHOW_PROMOTIONAL_CLOSE_PAGE:false},userInfo:{displayName:myName}});jitsiAPI.addEventListener('readyToClose',()=>endCall(cId));};if(window.JitsiMeetExternalAPI){launch();}else{const s=document.createElement('script');s.src=`https://${JITSI_SERVER}/external_api.js`;s.onload=launch;s.onerror=()=>{const params=`config.startWithVideoMuted=${!iv}&config.prejoinPageEnabled=false&config.requireDisplayName=false&config.enableAuthentication=false&userInfo.displayName=${encodeURIComponent(myName)}`;cnt.innerHTML=`<iframe src="https://${JITSI_SERVER}/${room}#${params}" allow="camera;microphone;fullscreen;display-capture" style="width:100%;height:100%;border:none"></iframe>`;};document.head.appendChild(s);}}
+async function openJitsi(room,iv,cId){
+  document.getElementById('call-ico').textContent=iv?'📹':'🎙️';
+  document.getElementById('j-title').textContent=iv?'Connexion à l\'appel vidéo…':'Connexion à l\'appel vocal…';
+  document.getElementById('jitsi-overlay').classList.add('open');
+  const cnt=document.getElementById('jitsi-container');
+  cnt.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;font-size:14px;gap:10px"><div style="width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite"></div>Préparation de l\'appel…</div>';
+  if(!document.getElementById('jitsi-spin-style')){const st=document.createElement('style');st.id='jitsi-spin-style';st.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(st);}
+
+  // ── 1. Récupérer le JWT modérateur depuis Firebase Function ──────────────
+  let jwtToken='';
+  let jitsiRoom=room;
+  try{
+    const getToken=functionsInstance.httpsCallable('getJitsiToken');
+    const result=await getToken({room,displayName:myName});
+    jwtToken=result.data.token;
+    jitsiRoom=result.data.jitsiRoom; // format appId/nomDuSalon requis par JaaS
+    document.getElementById('j-title').textContent=iv?'Appel vidéo en cours':'Appel vocal en cours';
+  }catch(err){
+    console.warn('[openJitsi] Impossible d\'obtenir le JWT:',err.message,'→ fallback sans token');
+    // Fallback : ouvre sans token (risque de demander un hôte)
+    document.getElementById('j-title').textContent=iv?'Appel vidéo en cours':'Appel vocal en cours';
+  }
+
+  cnt.innerHTML='';
+
+  // ── 2. Lancer JitsiMeetExternalAPI avec le token ─────────────────────────
+  const launch=()=>{
+    const options={
+      roomName:jitsiRoom,
+      width:'100%',
+      height:'100%',
+      parentNode:cnt,
+      configOverwrite:{
+        startWithAudioMuted:false,
+        startWithVideoMuted:!iv,
+        prejoinPageEnabled:false,
+        lobby:{autoKnock:false,enableChat:false},
+        enableLobbyChat:false,
+        requireDisplayName:false,
+        enableAuthentication:false,
+        disableDeepLinking:true,
+        disableInitialGUM:false,
+      },
+      interfaceConfigOverwrite:{
+        TOOLBAR_BUTTONS:['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','videoquality','tileview'],
+        SHOW_JITSI_WATERMARK:false,
+        SHOW_BRAND_WATERMARK:false,
+        SHOW_PROMOTIONAL_CLOSE_PAGE:false,
+      },
+      userInfo:{displayName:myName},
+    };
+    // Injecter le JWT seulement s'il a été obtenu
+    if(jwtToken) options.jwt=jwtToken;
+    jitsiAPI=new JitsiMeetExternalAPI(JITSI_SERVER,options);
+    jitsiAPI.addEventListener('readyToClose',()=>endCall(cId));
+  };
+
+  if(window.JitsiMeetExternalAPI){
+    launch();
+  }else{
+    const s=document.createElement('script');
+    s.src=`https://${JITSI_SERVER}/external_api.js`;
+    s.onload=launch;
+    s.onerror=()=>{
+      // Fallback iframe si le script externe échoue
+      const params=`config.startWithVideoMuted=${!iv}&config.prejoinPageEnabled=false&config.requireDisplayName=false&userInfo.displayName=${encodeURIComponent(myName)}`;
+      cnt.innerHTML=`<iframe src="https://${JITSI_SERVER}/${jitsiRoom}?jwt=${jwtToken}#${params}" allow="camera;microphone;fullscreen;display-capture" style="width:100%;height:100%;border:none"></iframe>`;
+    };
+    document.head.appendChild(s);
+  }
+}
 function endCall(cId){if(jitsiAPI){try{jitsiAPI.dispose();}catch(e){}jitsiAPI=null;}document.getElementById('jitsi-container').innerHTML='';document.getElementById('jitsi-overlay').classList.remove('open');if(cId)db.ref(`calls/${cId}`).update({status:'ended'});}
 
 /* ══ HEARTBEAT ══ */
