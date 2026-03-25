@@ -503,7 +503,7 @@ const FCM_VAPID_KEY="VOTRE_VAPID_KEY";
 const JITSI_SERVER="meet.jit.si";
 firebase.initializeApp(FIREBASE_CONFIG);
 const db=firebase.database(),auth=firebase.auth(),messaging=firebase.messaging(),storage=firebase.storage();
-firebase.database().goOnline();firebase.database().setPersistenceEnabled(true);
+firebase.database().goOnline();
 
 let me=null,myName='',myStatus='online',myStatusTxt='En ligne';
 let currentRoom=null,currentRoomType='channel';
