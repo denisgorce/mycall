@@ -6,7 +6,7 @@ on:
     tags:     [ 'v*' ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:        # Bouton "Run workflow" manuel
+  workflow_dispatch:
 
 jobs:
   build-apk:
@@ -25,12 +25,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # ── 3. Node.js (sans cache car pas de lock file) ─
+      # ── 3. Node.js ───────────────────────────────
       - name: 🟢 Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # ⚠️ "cache: npm" retiré — nécessite un package-lock.json
 
       # ── 4. Android SDK ───────────────────────────
       - name: 🤖 Setup Android SDK
@@ -39,7 +38,6 @@ jobs:
       # ── 5. Injecter la config Firebase ───────────
       - name: 🔐 Inject Firebase config
         run: |
-          # index.html
           sed -i "s|VOTRE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g"             www/index.html
           sed -i "s|VOTRE_PROJECT.firebaseapp.com|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" www/index.html
           sed -i "s|https://VOTRE_PROJECT-default-rtdb.firebaseio.com|${{ secrets.FIREBASE_DATABASE_URL }}|g" www/index.html
@@ -47,7 +45,6 @@ jobs:
           sed -i "s|VOTRE_SENDER_ID|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" www/index.html
           sed -i "s|VOTRE_APP_ID|${{ secrets.FIREBASE_APP_ID }}|g"               www/index.html
           sed -i "s|VOTRE_VAPID_KEY|${{ secrets.FIREBASE_VAPID_KEY }}|g"         www/index.html
-          # Service Worker
           sed -i "s|VOTRE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g"             www/firebase-messaging-sw.js
           sed -i "s|VOTRE_PROJECT.firebaseapp.com|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" www/firebase-messaging-sw.js
           sed -i "s|https://VOTRE_PROJECT-default-rtdb.firebaseio.com|${{ secrets.FIREBASE_DATABASE_URL }}|g" www/firebase-messaging-sw.js
@@ -57,38 +54,158 @@ jobs:
 
       # ── 6. NPM install ────────────────────────────
       - name: 📦 Install dependencies
-        run: npm install   # ✅ remplace "npm ci" (qui exige un lock file)
+        run: npm install
 
-      # ── 7. Capacitor : ajouter Android ───────────
+      # ── 7. Supprimer android et le recréer proprement ──
       - name: 🗑️ Remove existing android folder
         run: rm -rf android
 
+      - name: ➕ Capacitor add android (recrée le dossier complet)
+        run: npx cap add android
+
+      # ── 8. Injecter google-services.json ─────────
       - name: 🔥 Inject google-services.json
         run: |
-          mkdir -p android/app
           printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
-      
-      - name: ➕ Capacitor add android
-        run: npx cap sync android
-        
-      - name: ➕ Capacitor sync android
-        run: npx cap sync android
-        
-      # ── 8. Copier les fichiers web → Android ─────
-      - name: 📋 Capacitor copy
-        run: npx cap copy android
 
-      # ── 9. Gradle permissions ────────────────────
+      # ── 9. Injecter AndroidManifest.xml ──────────
+      - name: 📄 Inject AndroidManifest.xml
+        run: |
+          cat > android/app/src/main/AndroidManifest.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.mycall.app">
+
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.RECORD_AUDIO" />
+              <uses-permission android:name="android.permission.CAMERA" />
+              <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+              <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+              <uses-permission android:name="android.permission.VIBRATE" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:roundIcon="@mipmap/ic_launcher_round"
+                  android:supportsRtl="true"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="true">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+                      android:exported="true"
+                      android:label="@string/title_activity_main"
+                      android:launchMode="singleTask"
+                      android:theme="@style/AppTheme.NoActionBarLaunch"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+
+                  <provider
+                      android:name="androidx.core.content.FileProvider"
+                      android:authorities="${applicationId}.fileprovider"
+                      android:exported="false"
+                      android:grantUriPermissions="true">
+                      <meta-data
+                          android:name="android.support.FILE_PROVIDER_PATHS"
+                          android:resource="@xml/file_paths" />
+                  </provider>
+
+              </application>
+          </manifest>
+          EOF
+
+      # ── 10. Injecter les ressources res/ ─────────
+      - name: 🎨 Inject res/values and res/xml
+        run: |
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/res/xml
+
+          cat > android/app/src/main/res/values/strings.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">MyCall</string>
+              <string name="title_activity_main">MyCall</string>
+              <string name="package_name">com.mycall.app</string>
+              <string name="custom_url_scheme">com.mycall.app</string>
+          </resources>
+          EOF
+
+          cat > android/app/src/main/res/values/colors.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="colorPrimary">#075E54</color>
+              <color name="colorPrimaryDark">#075E54</color>
+              <color name="colorAccent">#25D366</color>
+          </resources>
+          EOF
+
+          cat > android/app/src/main/res/values/styles.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+                  <item name="colorPrimary">@color/colorPrimary</item>
+                  <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+                  <item name="colorAccent">@color/colorAccent</item>
+              </style>
+              <style name="AppTheme.NoActionBarLaunch" parent="AppTheme">
+                  <item name="android:windowBackground">@color/colorPrimary</item>
+                  <item name="windowActionBar">false</item>
+                  <item name="windowNoTitle">true</item>
+              </style>
+          </resources>
+          EOF
+
+          cat > android/app/src/main/res/xml/file_paths.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths xmlns:android="http://schemas.android.com/apk/res/android">
+              <external-path name="my_images" path="." />
+              <external-files-path name="my_files" path="." />
+              <cache-path name="my_cache" path="." />
+              <files-path name="files" path="." />
+          </paths>
+          EOF
+
+      # ── 11. Injecter MainActivity.java ────────────
+      - name: ☕ Inject MainActivity.java
+        run: |
+          mkdir -p android/app/src/main/java/com/mycall/app
+          cat > android/app/src/main/java/com/mycall/app/MainActivity.java << 'EOF'
+          package com.mycall.app;
+
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+              }
+          }
+          EOF
+
+      # ── 12. Sync Capacitor (copie www → assets) ───
+      - name: 🔄 Capacitor sync
+        run: npx cap sync android
+
+      # ── 13. Gradle permissions ────────────────────
       - name: 🔧 Make gradlew executable
         run: chmod +x android/gradlew
 
-      # ── 10. Build APK debug ───────────────────────
+      # ── 14. Build APK debug ───────────────────────
       - name: 🏗️ Build APK (debug)
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon
 
-      # ── 11. Renommer l'APK ────────────────────────
+      # ── 15. Renommer l'APK ────────────────────────
       - name: 📝 Rename APK
         run: |
           VERSION="${{ github.ref_name }}"
@@ -98,7 +215,7 @@ jobs:
           echo "APK_NAME=mycall-${VERSION}.apk" >> $GITHUB_ENV
           echo "APK_PATH=android/app/build/outputs/apk/debug/mycall-${VERSION}.apk" >> $GITHUB_ENV
 
-      # ── 12. Upload artifact (toujours dispo) ──────
+      # ── 16. Upload artifact ───────────────────────
       - name: 📤 Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -106,7 +223,7 @@ jobs:
           path: ${{ env.APK_PATH }}
           retention-days: 30
 
-      # ── 13. Créer une Release GitHub (sur tag) ────
+      # ── 17. Créer une Release GitHub (sur tag) ────
       - name: 🏷️ Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
@@ -126,7 +243,7 @@ jobs:
           draft: false
           prerelease: false
 
-  # ── Job bonus : déployer la version Web ──────────
+  # ── Job : déployer la version Web ────────────────
   deploy-web:
     name: 🌐 Deploy Web App (GitHub Pages)
     runs-on: ubuntu-latest
@@ -172,7 +289,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # ── Job : déployer les Cloud Functions ──────────
+  # ── Job : déployer les Cloud Functions ───────────
   deploy-functions:
     name: ☁️ Deploy Cloud Functions
     runs-on: ubuntu-latest
@@ -189,12 +306,12 @@ jobs:
           node-version: '20'
 
       - name: 📦 Install Functions dependencies
-        run: cd functions && npm install   # ✅ remplace "npm ci"
+        run: cd functions && npm install
 
       - name: 🚀 Deploy to Firebase Functions
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only functions,database --force   # ← ajouter --force ici
+          args: deploy --only functions,database --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
